@@ -1,19 +1,80 @@
+{% set current_route = app.request.get('_route') %}
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
-
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="icon" type="image/png" href="/resources/img/logo.png">
+    <title>{% block title %}BORDEREAU - Administration{% endblock %}</title>
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <!-- Vendor CSS Files -->
+    <link href="/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/resources/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/resources/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="/resources/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="/resources/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="/resources/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="/resources/vendor/simple-datatables/style.css" rel="stylesheet">
+    <!-- Template Main CSS File -->
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+    <script src="/resources/jquery/jquery-3.5.1.js"></script>
+    <!-- Vendor JS Files -->
+    <script src="/resources/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="/resources/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/resources/vendor/chart.js/chart.umd.js"></script>
+    <script src="/resources/vendor/echarts/echarts.min.js"></script>
+    <script src="/resources/vendor/quill/quill.min.js"></script>
+    <script src="/resources/vendor/simple-datatables/simple-datatables.js"></script>
+    <script src="/resources/vendor/tinymce/tinymce.min.js"></script>
+    <script src="/resources/vendor/php-email-form/validate.js"></script>
+</head>
+<body class="bo">
+{% block body %}{% endblock %}
+{% block javascripts %}
+    {{ encore_entry_script_tags('app') }}
+    <script type="text/javascript">
+        function showLoader() {
+            $('.modal-loading').css({'display': 'flex'})
+        }
+        function hideLoader() {
+            $('.modal-loading').hide()
+        }
+        function goToTop(top, left) {
+            window.scrollTo({
+                top: top,
+                left: left,
+                behavior: 'smooth'
+            })
+        }
+        {% if ('_login' not in current_route) %}
+            window.addEventListener("resize", (event) => {
+                var pageBody = document.querySelector("body").getBoundingClientRect();
+                if(pageBody.width > 990) {
+                    document.querySelector("#app").classList.add('expanded')
+                } else {
+                    document.querySelector("#app").classList.remove('expanded')
+                }
+            })
+        {% endif %}
+    </script>
+{% endblock %}
+{% if ('_login' in current_route) %}
+<div class="modal-loading">
+    <div class="modal-loading-content">
+        <div class="modal-loading-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="progress progress-farm">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</body>
 </html>

@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateur - Liste{% endblock %}
+
+{% block body %}
+    <div class="container container-contents pt-5 pb-5 bg-white">
+        {# <div class="content-body"> #}
+            <h2 class="p-2 d-block">Liste des utilisateurs <a href="{{ path('app_user_platform_new') }}" class="btn btn-sm btn-success bg-bet ml-2"><i class="fa fa-plus fa-fw"></i>Ajouter</a></h2>
+            <table id="table-userplatform" class="table table-striped table-hover w-100">
+		        <thead>
+		            <tr>
+		                <th>Id</th>
+		                <th>Nom</th>
+		                <th>Prénom</th>
+		                <th>E-mail</th>
+		                <th>Adresse</th>
+		                <th>Statut</th>
+		                <th>Date de création</th>
+		                <th>Date de modification</th>
+		                <th>Actions</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+		        {% for user_platform in user_platforms %}
+		            <tr>
+		                <td>{{ user_platform.id }}</td>
+		                <td>{{ user_platform.firstname }}</td>
+		                <td>{{ user_platform.lastname }}</td>
+		                <td>{{ user_platform.getEmail().email }}</td>
+		                <td style="white-space: pre;">{{ user_platform.address }}</td>
+		                <td>{{ user_platform.statut }}</td>
+		                <td>{{ user_platform.createdAt ? user_platform.createdAt|date('H:i d/m/Y') : '' }}</td>
+		                <td>{{ user_platform.editedAt ? user_platform.editedAt|date('H:i d/m/Y') : '' }}</td>
+		                <td>
+		                    <a href="{{ path('app_user_platform_show', {'id': user_platform.id}) }}"><i class="fa fa-eye fa-fw text-primary"></i></a>
+                            <a href="{{ path('app_user_platform_edit', {'id': user_platform.id}) }}"><i class="fa fa-edit fa-fw text-bet"></i></a>
+                            {{ include('user_platform/_delete_form.html.twig') }}
+		                </td>
+		            </tr>
+		        {% else %}
+		            <tr>
+		                <td colspan="7" class="text-center">Aucun utilisateur trouvé.</td>
+		            </tr>
+		        {% endfor %}
+		        </tbody>
+		        <tfoot>
+		            <tr>
+		                <th>Id</th>
+		                <th>Nom</th>
+		                <th>Prénom</th>
+		                <th>E-mail</th>
+		                <th>Adresse</th>
+		                <th>Statut</th>
+		                <th>Date de création</th>
+		                <th>Date de modification</th>
+		                <th>Actions</th>
+		            </tr>
+		        </tfoot>
+		    </table>
+		{# </div> #}
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#table-userplatform').DataTable();
+        });
+    </script>
+{% endblock %}

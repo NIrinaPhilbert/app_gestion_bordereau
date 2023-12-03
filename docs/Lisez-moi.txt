@@ -1,0 +1,12 @@
+========== INSTALLATION ==========
+1- extraire l'archive et accéder au dossier du projet
+	Attention : Ne pas l'extraire dans un dossier xampp ou wamp mais quelque part dans le disque dur (symfony aura un serveur virtuel à démarrer)
+2- paramétrer le "DATABASE_URL" dans .env
+3- exécuter ces commandes :
+	=> composer install
+	=> yarn install (ou npm install)
+	=> php bin/console cache:clear
+4- lancer le projet :
+	=> symfony serve --no-tls
+	=> yarn run watch (ou npm run watch)
+5- lien du projet : http://127.0.0.1:8000 ou http://localhost:8000

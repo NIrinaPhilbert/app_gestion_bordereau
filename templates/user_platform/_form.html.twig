@@ -1,0 +1,58 @@
+<div class="container container-contents">
+	<div class="vh-100 d-flex justify-content-center align-items-center">
+		<div class="col-lg-6 col-md-8 col-sm-10 col-xs-12 p-5 shadow-sm border rounded-3 bg-white">
+			<h2 class="text-center mb-4 text-primary">{{ form_title|default('Nouvel utilisateur') }}</h2>
+			{{ form_start(form) }}
+				{% if not form.vars.valid or customError %}
+					{# <div class="mb-3 alert alert-warning text-center form-error" role="alert">{{ form_errors(form.email) }}</div> #}
+					<div class="mb-3 alert alert-warning form-error" role="alert">
+						<ul>
+							{% for error in form.vars.errors.form.getErrors(true) %}
+					            <li>{{ error.message }}</li>
+					        {% endfor %}
+					        {% for custom_error in customError %}
+					            <li>{{ custom_error }}</li>
+					        {% endfor %}
+						</ul>
+					</div>
+				{% endif %}
+				<div class="mb-3">
+					{{ form_label(form.firstname, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.firstname) }}
+				</div>
+				<div class="mb-3">
+					{{ form_label(form.lastname, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.lastname) }}
+				</div>
+				<div class="mb-3">
+					{{ form_label(form.address, 'Adresse', {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.address) }}
+				</div>
+				{% if (mode == 'profile') %}
+					<div class="mb-3">
+						{{ form_label(form.statut, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+						<label class="form-control border border-primary">{{ user_platform.getStatut() }}</label>
+					</div>
+				{% endif %}
+				<div class="mb-3" {% if (mode == 'profile') %} hidden{% endif %}>
+					{{ form_label(form.statut, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+					{% if (mode != 'profile') %}{{ form_widget(form.statut) }}{% else %}{{ form_widget(form.statut, {'required': false}) }}{% endif %}
+				</div>
+				<div class="mb-3" {% if (mode != 'add') %} hidden{% endif %}>
+					{{ form_label(form.email, 'E-mail', {'label_attr': {'class': 'form-label'}}) }}
+					{% if (mode == 'add') %}{{ form_widget(form.email) }}{% else %}{{ form_widget(form.email, {'required': false}) }}{% endif %}
+				</div>
+				<div class="mb-3" {% if (mode != 'add') %} hidden{% endif %}>
+					{{ form_label(form.password, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+					{% if (mode == 'add') %}{{ form_widget(form.password) }}{% else %}{{ form_widget(form.password, {'required': false}) }}{% endif %}
+				</div>
+				<div class="d-inline-block mt-3">
+					<button class="btn btn-success bg-bet"><i class="fa fa-save fa-fw"></i> {{ button_label|default('Enregistrer') }}</button>
+					{% if (mode != 'profile') %}
+						<a class="btn btn-secondary" href="{{ path('app_user_platform_index') }}"><i class="fa fa-list fa-fw"></i> Liste</a>
+					{% endif %}
+				</div>
+			{{ form_end(form) }}
+		</div>
+	</div>
+</div>

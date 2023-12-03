@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\DetailsBordereau;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+/**
+ * @extends ServiceEntityRepository<DetailsBordereau>
+ *
+ * @method DetailsBordereau|null find($id, $lockMode = null, $lockVersion = null)
+ * @method DetailsBordereau|null findOneBy(array $criteria, array $orderBy = null)
+ * @method DetailsBordereau[]    findAll()
+ * @method DetailsBordereau[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
+class DetailsBordereauRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, DetailsBordereau::class);
+    }
+
+    public function add(DetailsBordereau $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(DetailsBordereau $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function getLastDetails($family)
+    {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.family = :param')
+            ->setParameter('param', $family)
+            ->orderBy('d.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function findAllDistincts()
+    {
+        return $this->createQueryBuilder('d')
+            ->select('DISTINCT(d.taonaHasina) as yearHasina')
+            ->orderBy('d.taonaHasina', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    // public function findParticipantsRapport($quartier)
+    // {
+    //     return $this->createQueryBuilder('ps')
+    //         ->select('SUM(ps.quantity * ps.prix) as sumOfSale')
+    //         ->andWhere('ps.product = :prod')
+    //         ->andWhere("ps.date_entry LIKE '%".$daty."-%'")
+    //         ->setParameter('prod', $product)
+    //         ->getQuery()
+    //         ->getSingleScalarResult()
+    //     ;
+    // }
+
+//    /**
+//     * @return DetailsBordereau[] Returns an array of DetailsBordereau objects
+//     */
+//    public function findByExampleField($value): array
+//    {
+//        return $this->createQueryBuilder('d')
+//            ->andWhere('d.exampleField = :val')
+//            ->setParameter('val', $value)
+//            ->orderBy('d.id', 'ASC')
+//            ->setMaxResults(10)
+//            ->getQuery()
+//            ->getResult()
+//        ;
+//    }
+
+//    public function findOneBySomeField($value): ?DetailsBordereau
+//    {
+//        return $this->createQueryBuilder('d')
+//            ->andWhere('d.exampleField = :val')
+//            ->setParameter('val', $value)
+//            ->getQuery()
+//            ->getOneOrNullResult()
+//        ;
+//    }
+}

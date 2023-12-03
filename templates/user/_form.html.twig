@@ -1,0 +1,31 @@
+<div class="container container-contents">
+	<div class="vh-100 d-flex justify-content-center align-items-center">
+		<div class="col-lg-6 col-md-8 col-sm-10 col-xs-12 p-5 shadow-sm border rounded-3 bg-white">
+			<h2 class="text-center mb-4 text-primary">{{ form_title|default('Nouvel utilisateur') }}</h2>
+			{{ form_start(form) }}
+				{% if not form.vars.valid %}
+					{# <div class="mb-3 alert alert-warning text-center form-error" role="alert">{{ form_errors(form.email) }}</div> #}
+					<div class="mb-3 alert alert-warning form-error" role="alert">
+						<ul>
+							{% for error in form.vars.errors.form.getErrors(true) %}
+					            <li>{{ error.message }}</li>
+					        {% endfor %}
+						</ul>
+					</div>
+				{% endif %}
+				<div class="mb-3">
+					{{ form_label(form.email, 'E-mail', {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.email) }}
+				</div>
+				<div class="mb-3">
+					{{ form_label(form.password, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+					{{ form_widget(form.password) }}
+				</div>
+				<div class="d-inline-block mt-3">
+					<button class="btn btn-success bg-bet"><i class="fa fa-save fa-fw"></i> {{ button_label|default('Enregistrer') }}</button>
+					<a class="btn btn-secondary" href="{{ path('app_user_index') }}"><i class="fa fa-list fa-fw"></i> Liste</a>
+				</div>
+			{{ form_end(form) }}
+		</div>
+	</div>
+</div>

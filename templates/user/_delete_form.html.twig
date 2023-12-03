@@ -1,0 +1,5 @@
+<a onclick="$(this).next('form').find('button.user-delete').click(); return false;"><i class="fa fa-trash fa-fw text-danger"></i></a>
+<form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Voulez-vous supprimer cet utilisateur?');" hidden>
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+    <button class="btn user-delete"></button>
+</form>

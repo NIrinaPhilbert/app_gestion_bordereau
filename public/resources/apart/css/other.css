@@ -1,0 +1,115 @@
+/* loader */
+.progress-farm {
+	border-radius: 0 !important;
+	height: .25rem !important;
+}
+.progress-farm .progress-bar {
+	background-color: #115071 !important;
+	width: 50%;
+	animation: slideshow 1.5s linear infinite;
+}
+@keyframes slideshow {
+	0% { transform: translateX(0%); }
+	50% { transform: translateX(200%); }
+	100% { transform: translateX(-200%); }
+}
+.progress-farm .progress-bar-striped {
+	background-image: linear-gradient(45deg,rgba(255,255,255,.3) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.3) 75%,transparent 75%,transparent) !important;
+}
+.progress-farm .progress-bar-animated {
+	-webkit-animation: .3s linear infinite progress-bar-stripes !important;
+	animation: .3s linear infinite progress-bar-stripes !important;
+}
+.modal-loading {
+	display: none;
+	position: fixed;
+	padding-top: 66px;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999999;
+	justify-content: center;
+	align-items: center;
+}
+.modal-loading .modal-loading-content {
+	background: rgba(255,255,255,.7);
+	/*border-top: 6px solid #115071;*/
+	width: 100%;
+	height: 100%;
+}
+.modal-loading .modal-loading-body {
+	/*background: #fff;*/
+	color: #fff;
+	padding: 0;
+	font-size: 14pt;
+	text-align: center;
+}
+.modal-loading .modal-loading-body table {
+	width: 100%;
+	/*border-collapse: separate;*/
+	/*border-spacing: 10px;*/
+}
+.modal-loading .modal-loading-body .state {
+	border: 4px solid;
+	border-radius: 100%;
+	display: flex;
+	width: 60px;
+	height: 60px;
+	justify-content: center;
+	align-items: center;
+	margin: auto;
+}
+.modal-loading .modal-loading-body .state::after {
+	font-size: 20pt;
+}
+.modal-loading .modal-loading-body .state.is_error {
+	color: #ee1d1d;
+	background: #fff;
+}
+.modal-loading .modal-loading-body .msg-request {
+	color: inherit;
+	padding: 15px 0;
+}
+.modal-loading .modal-loading-body .ok-request .btn {
+	border: 1px solid #edd;
+}
+.state::after  {
+	font-weight: bold;
+	font-size: 18pt;
+}
+.state  {
+	width: 50px;
+	text-align: center;
+	display: none;
+}
+.state.is_success::after  {
+	content: "\2714";
+}
+.state.is_error::after  {
+	content: "\2716";
+}
+.state.is_confirm::after  {
+	content: "\2753";
+}
+.state.is_success, .state.is_confirm  {
+	background: #fff;
+	display: table-cell;
+	border: 1px solid #eee;
+	border-right: none;
+}
+.state.is_success  {
+	color: #77b255;
+}
+.state.is_error  {
+	color: #fff;
+	background: #ee1d1d;
+	display: table-cell;
+}
+.state.is_confirm  {
+	color: #be1931;
+}
+
+.swal2-container {
+	z-index: 9999999 !important;
+}

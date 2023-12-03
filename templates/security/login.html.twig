@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BORDEREAU - Authentification{% endblock %}
+
+{% block body %}
+	<main>
+		<div class="container">
+			<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+				<div class="container">
+					<div class="row justify-content-center">
+						<div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+							<div class="d-flex justify-content-center py-4">
+								<a class="logo d-flex align-items-center w-auto">
+									<img src="/resources/img/logo.png" alt="">
+								</a>
+							</div><!-- End Logo -->
+							<div class="card mb-3">
+								<div class="card-body">
+									<div class="pt-2 pb-3">
+										<h5 class="card-title text-center pb-0 fs-4">Authentification</h5>
+									</div>
+						            <form class="row g-3 needs-validation" method="post" novalidate id="form-login">
+										<div class="mb-2 alert alert-warning text-center form-error" style="display: {% if error %}block{% else %}none{% endif %};"><i class="fa fa-exclamation-triangle fa-fw"></i> Vos informations sont incorrectes.</div>
+					                    <div class="col-12">
+					                        <div class="form-floating">
+					                        	<input type="text" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" placeholder="user@example.com" autofocus required>
+					                        	<label for="inputEmail">E-mail</label>
+											</div>
+					                    </div>
+					                    <div class="col-12">
+					                        <div class="form-floating">
+					                        	<input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" placeholder="************" required>
+					                        	<label for="inputPassword">Mot de passe</label>
+					                    	</div>
+					                    </div>
+					                    <div class="mb-3" hidden><input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"></div>
+					                    <div class="col-12 mt-4 mb-3">
+					                        <button id="submit-login" type="submit" class="btn btn-lg btn-primary w-100"><i class="bi bi-box-arrow-in-right me-2"></i><span>Se connecter</span></button>
+					                    </div>
+						            </form>
+								</div>
+							</div>
+							<div class="credits"><label class="text-muted text-bold">Ecar Mangasoavina</label></div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</main><!-- End #main -->
+	<script type="text/javascript">
+		$(document).on('submit', '#form-login', function(e) {
+			showLoader();
+			if ($('#inputEmail').val() == '' || $('#inputPassword').val() == '') {
+				e.preventDefault();
+				if ($('#inputEmail').val() == '') {
+					$('.form-error').html('<i class="fa fa-exclamation-triangle fa-fw"></i> Le champ "E-mail" est requis.').fadeIn(100);
+					$('#inputEmail').focus();
+				} else if ($('#inputPassword').val() == '') {
+					$('.form-error').html('<i class="fa fa-exclamation-triangle fa-fw"></i> Le champ "Mot de passe" est requis.').fadeIn(100);
+					$('#inputPassword').focus();
+				}
+				hideLoader();
+			} else {
+				if (validateEmail($('#inputEmail').val())) {
+					$('.form-error').hide();
+				} else {
+					e.preventDefault();
+					$('.form-error').html('<i class="fa fa-exclamation-triangle fa-fw"></i> Entrez un E-mail valide.').fadeIn(100);
+					$('#inputEmail').focus();
+					hideLoader();
+				}
+			}
+		});
+		function validateEmail(email) {
+	        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+	        return re.test(String(email).toLowerCase());
+	    }
+	</script>
+{% endblock %}

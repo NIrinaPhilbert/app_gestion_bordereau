@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  */
 class QuartierController extends AbstractController
 {
+   
     /**
      * @Route("/quartier", name="quartier_index", methods={"GET"})
      */

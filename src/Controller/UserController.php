@@ -31,7 +31,7 @@ class UserController extends AbstractController
         if (!$this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('index', [], Response::HTTP_SEE_OTHER);
         }
-
+       
         return $this->render('user/index.html.twig', [
             'users' => $userRepository->findAll(),
         ]);

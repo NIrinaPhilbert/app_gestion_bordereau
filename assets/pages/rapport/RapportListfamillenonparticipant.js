@@ -1,11 +1,15 @@
 import React,{ useState, useEffect} from 'react'
 import { Link, useNavigate, Navigate } from "react-router-dom"
 import Layout from "../../components/Layout"
+import parse from 'html-react-parser'
 import Swal from 'sweetalert2'
 import DataTable from 'react-data-table-component'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import DatePicker from 'react-datepicker'
+import "react-datepicker/dist/react-datepicker.css"
 import axios from 'axios'
+import * as XLSX from 'xlsx-js-style';
 
 var familyStatus = process.env.FAMILY_STATUS
 familyStatus = familyStatus.split('|')
@@ -23,13 +27,12 @@ function formatDate(date) {
 
     return [year, month, day].join('-');
 }
-function FamilyList() {
+function RapportListfamillenonparticipant() {
     const  [familyList, setFamilyList] = useState([])
     const  [isFecthed, setIsFetched] = useState(false)
     const navigate = useNavigate()
     const shouldRedirect = (localStorage.getItem('mysession') === null) ? true : false
     const [familyListSearch, setFamilyListSearch] = useState([])
-    let mysession = (localStorage.getItem('mysession') !== null) ? JSON.parse(localStorage.getItem('mysession')) : null
     //=============================================//
     const initialSearch = {
         
@@ -46,7 +49,15 @@ function FamilyList() {
 
     }
     const [searchData, setSearchData] = useState(initialSearch)
-    
+    const [boutonVisible, setBoutonVisible] = useState(true)
+    let date = new Date() ;
+    const initialSearch1 = {
+        year: "",
+        begin: new Date(date.getFullYear(), 0, 1),
+        end: new Date()
+    }
+    const [searchData1, setSearchData1] = useState(initialSearch1)
+    const [yearsData, setYearsData] = useState([])
     //=============================================//
 
     if (shouldRedirect) {
@@ -147,19 +158,35 @@ function FamilyList() {
     };
   
     useEffect(() => {
+        /*
         var oDataUser = JSON.parse(jQuery('#app').attr('data-user')) ;
         console.log(oDataUser) ;
         console.log(oDataUser.access) ;
-        
-        fetchFamilyList()
+        if(oDataUser.access == 'user')
+        {
+            setBoutonVisible(false) ;
+        }
+        */
+        fetchRapportList()
     }, [])
-  
-    const fetchFamilyList = () => {
-    	setIsFetched(false)
-        showLoader()
-        axios.get('/api/family/list')
+    
+
+    const fetchRapportList = (isLoading = true, mode = "list") => {
+        let dataSearch1 = {...searchData1}
+        if (isLoading) {
+        	if (mode == "list") setIsFetched(false)
+            showLoader()
+        }
+        console.log(dataSearch1.begin)
+        let formData = new FormData()
+        formData.append("action", "search")
+        formData.append("mode", mode)
+        formData.append("year", dataSearch1.year)
+        formData.append("begin", formatDate(dataSearch1.begin))
+        formData.append("end", formatDate(dataSearch1.end))
+        axios.post('/api/rapport/listnonparticipant', formData)
         .then(function (response) {
-			setIsFetched(true)
+            setIsFetched(true)
 			response.data.map((family, key)=>{
                 var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
                 /*family.statut = (
@@ -169,20 +196,16 @@ function FamilyList() {
                 family.statut = familyStatus[family.statut ? 0 : 1]
                 family.actions = (
                     <>
-                        {(mysession.user_authorisation.famille.edit == 1) ?
-                            <Link
-                                className="btn btn-sm btn-outline-success mx-1"
-                                to={`/families/edit/${family.id}`}>
-                                <i className="bi bi-pencil-square"></i>
-                            </Link> : null
-                        }
-                        {(mysession.user_authorisation.famille.delete == 1) ?
-                            <button 
-                                onClick={()=>handleDelete(family.id)}
-                                className="btn btn-sm btn-outline-danger mx-1">
-                                <i className="bi bi-trash"></i>
-                            </button> : null
-                        }
+                        <Link
+                            className="btn btn-sm btn-outline-success mx-1"
+                            to={`/families/edit/${family.id}`}>
+                            <i className="bi bi-pencil-square"></i>
+                        </Link>
+                        <button 
+                            onClick={()=>handleDelete(family.id)}
+                            className="btn btn-sm btn-outline-danger mx-1">
+                            <i className="bi bi-trash"></i>
+                        </button>
                     </>
                 )
                 return family
@@ -208,6 +231,31 @@ function FamilyList() {
 
     const handleRefresh = () => {
     	fetchFamilyList()
+    }
+    const focusDatepicker = (ev) => {
+        var thisId = ev.target.id;
+        $('#'+thisId).closest('.form-floating').addClass('form-floating-datepicker')
+    }
+    const blurDatepicker = (ev) => {
+        var thisId = ev.target.id;
+        if ($('#'+thisId).val() == '') $('#'+thisId).closest('.form-floating').removeClass('form-floating-datepicker')
+    }
+
+    const searchRapport = (mode = "list") => {
+        console.log('searchRapport')
+        fetchRapportList(mode == "export" ? true : false, mode)
+    }
+
+    const changeSearchData1 = (key, val) => {
+        var dataSearch1 = {...searchData1}
+        dataSearch1[key] = val
+        setSearchData1(dataSearch1)
+    }
+
+    const changeSearchData = (key, val) => {
+        var dataSearch = {...searchData}
+        dataSearch[key] = val
+        setSearchData(dataSearch)
     }
 
     const handleDelete = (id) => {
@@ -315,26 +363,82 @@ function FamilyList() {
             </div>
             <section className="section">
                 <div className="row">
+                    <div className="col-12 mb-2">
+                        <h5>Zone de recherche</h5>
+                    </div>
+                    <div className="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                        <div className="form-floating">
+                            <select
+                                className="form-select form-control border border-outline-primary"
+                                id="searchYear"
+                                value={searchData1.year}
+                                onChange={(e)=>changeSearchData1("year", e.target.value)}
+                                aria-label="Sélection d'année">
+                                <option value="">Tous</option>
+                                {yearsData.map((year, keyear) => {
+                                    return (
+                                        <option key={"year_"+keyear} value={year}>{year}</option>
+                                    )
+                                })}
+                            </select>
+                            <label htmlFor="searchYear">Année <span className="text-bold text-danger text-sm">*</span></label>
+                        </div>
+                    </div>
+                    <div className="col-lg-4 col-md-4 col-sm-3 col-xs-6">
+                        <div className="form-floating form-floating-datepicker">
+                            <DatePicker
+                                className="form-control border border-outline-primary"
+                                selected={searchData1.begin}
+                                onChange={(value)=>changeSearchData1("begin", value)}
+                                onFocus={e => { e.preventDefault(); focusDatepicker(e); }}
+                                onBlur={e => { e.preventDefault(); blurDatepicker(e); }}
+                                dateFormat="dd/MM/yyyy"
+                                id="begin"
+                                name="begin"
+                                shouldCloseOnSelect={false}
+                                placeholder="Date début"
+                            />
+                            <label htmlFor="begin">Date début <span className="text-bold text-danger text-sm">*</span></label>
+                        </div>
+                    </div>
+                    <div className="col-lg-4 col-md-4 col-sm-3 col-xs-6">
+                        <div className="form-floating form-floating-datepicker">
+                            <DatePicker
+                                className="form-control border border-outline-primary"
+                                selected={searchData1.end}
+                                onChange={(value)=>changeSearchData1("end", value)}
+                                onFocus={e => { e.preventDefault(); focusDatepicker(e); }}
+                                onBlur={e => { e.preventDefault(); blurDatepicker(e); }}
+                                dateFormat="dd/MM/yyyy"
+                                id="end"
+                                name="end"
+                                shouldCloseOnSelect={false}
+                                placeholder="Date fin"
+                            />
+                            <label htmlFor="end">Date fin <span className="text-bold text-danger text-sm">*</span></label>
+                        </div>
+                    </div>
+                    <div className="col-12">
+                        <button 
+                            onClick={(e)=>{e.preventDefault(); searchRapport();}}
+                            className="btn btn-sm btn-outline-primary me-3 mt-3 mb-2">
+                            <i className="bi bi-search me-1"></i>
+                            Chercher
+                        </button>
+                        <button 
+                            onClick={(e)=>{e.preventDefault(); searchReset();}}
+                            className="btn btn-sm btn-outline-secondary me-3 mt-3 mb-2">
+                            <i className="bi bi-bootstrap-reboot me-1"></i>
+                            Réinitialiser
+                        </button>
+                        
+                    </div>
+                </div>
+                <div className="row">
                     <div className="col-12">
                         <div className="card mt-3">
                             <div className="card-body p-3">
-                            	<div className="mb-2 mt-1">
-                                    {(mysession.user_authorisation.famille.add == 1) ?
-                                        <Link
-                                            to="/families/new"
-                                            className="btn btn-sm btn-outline-primary mx-1">
-                                            <i className="bi bi-plus-circle me-1"></i>
-                                            Créer
-                                        </Link> : null
-                                    }
-                                	
-                                    <button 
-                                        onClick={()=>handleRefresh()}
-                                        className="btn btn-sm btn-outline-secondary mx-1">
-                                        <i className="bi bi-bootstrap-reboot me-1"></i>
-                                        Actualiser
-                                    </button>
-            					</div>
+                            	
                                 <div className="mb-1 mt-3 px-2 py-3">
                                         <div className="w-100 border border-radius-0 p-3">
                                             <div className="row">
@@ -423,4 +527,5 @@ function FamilyList() {
     );
 }
   
-export default FamilyList;
+  
+export default RapportListfamillenonparticipant;

@@ -12,6 +12,8 @@ function QuartierList() {
     const  [isFecthed, setIsFetched] = useState(false)
     const navigate = useNavigate()
     const shouldRedirect = (localStorage.getItem('mysession') === null) ? true : false
+    
+    
 
     if (shouldRedirect) {
         showLoader()
@@ -21,7 +23,7 @@ function QuartierList() {
             </>
         );
     }
-
+    let mysession = (localStorage.getItem('mysession') !== null) ? JSON.parse(localStorage.getItem('mysession')) : null
     const columns = [
         {
             name: '#ID',
@@ -68,17 +70,24 @@ function QuartierList() {
             response.data.map((quart, key)=>{
                 quart.actions = (
                     <>
-                        <Link
-                            className="btn btn-sm btn-outline-success mx-1"
-                            to={`/quartiers/edit/${quart.id}`}>
-                            <i className="bi bi-pencil-square"></i>
-                        </Link>
-                        <button 
-                            onClick={()=>handleDelete(quart.id)}
-                            className="btn btn-sm btn-outline-danger mx-1">
-                            <i className="bi bi-trash"></i>
-                        </button>
-                    </>
+                            {(mysession.user_authorisation.quartier.edit == 1) ?
+                                <Link
+                                    className="btn btn-sm btn-outline-success mx-1"
+                                    to={`/quartiers/edit/${quart.id}`}>
+                                    <i className="bi bi-pencil-square"></i>
+                                </Link> : null
+                            }
+                            
+                        
+                            {(mysession.user_authorisation.quartier.delete == 1) ?
+                                <button 
+                                    onClick={()=>handleDelete(quart.id)}
+                                    className="btn btn-sm btn-outline-danger mx-1">
+                                    <i className="bi bi-trash"></i>
+                                </button> : null
+                            }
+                        
+                     </>
                 )
                 return quart
             })
@@ -184,12 +193,15 @@ function QuartierList() {
                         <div className="card mt-3">
                             <div className="card-body p-3">
                                 <div className="mb-2 mt-1">
-                                    <Link
-                                        to="/quartiers/new"
-                                        className="btn btn-sm btn-outline-primary mx-1">
-                                        <i className="bi bi-plus-circle me-1"></i>
-                                        Créer
-                                    </Link>
+                                    {(mysession.user_authorisation.quartier.add == 1) ?
+                                        <Link
+                                            to="/quartiers/new"
+                                            className="btn btn-sm btn-outline-primary mx-1">
+                                            <i className="bi bi-plus-circle me-1"></i>
+                                            Créer
+                                        </Link> : null
+                                    }
+                                    
                                     <button 
                                         onClick={()=>handleRefresh()}
                                         className="btn btn-sm btn-outline-secondary mx-1">

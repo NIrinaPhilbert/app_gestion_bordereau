@@ -29,6 +29,7 @@ function FamilyCreate() {
     const [apv, setAPV] = useState('')
     const [apvOptions, setApvOptions] = useState([])
     const [cardsNumberList, setCardsNumberList] = useState([])
+    const [firstnameLastnameList, setFirstnameLastnameList] = useState([])
     const [cardNumber, setCardNumber] = useState('')
     const [dateIn, setDateIn] = useState(new Date())
     const [dateOut, setDateOut] = useState(null)
@@ -39,6 +40,7 @@ function FamilyCreate() {
     const [isSaving, setIsSaving] = useState(false)
     const [isGeneralError, setIsGeneralError] = useState(false)
     const [msgGeneral, setMsgGeneral] = useState('')
+    const [firstnameLastnameSearch, setFirstnameLastnameSearch] = useState('')
     const navigate = useNavigate()
 
     
@@ -152,6 +154,7 @@ function FamilyCreate() {
         .then(function (response) {
             setApvOptions(response.data.apvOptions)
             setCardsNumberList(response.data.cardsNumberList)
+            setFirstnameLastnameList(response.data.tzNomPrenomFamilleList)
             if (response.data.apvOptions.length > 0) {
                 setIsGeneralError(false)
                 setMsgGeneral("")
@@ -179,17 +182,33 @@ function FamilyCreate() {
     }, [])
   
     const handleSave = () => {
+        
+        /*
+        setFirstnameLastnameSearch(firstname.toLowerCase() + ' ' + lastname.toLowerCase())
+        console.log(firstname.toLowerCase() + ' ' + lastname.toLowerCase()) ;
+        console.log(firstnameLastnameList) ;
+        console.log(firstnameLastnameList.includes(firstname.toLowerCase() + ' ' + lastname.toLowerCase())) ;
+        console.log(cardsNumberList) ;
+        return false ;
+        */
+        
+        
         setIsSaving(true)
         showLoader()
         if (
             firstname == '' 
             || cardNumber == '' 
             || cardsNumberList.includes(cardNumber)
+            || firstnameLastnameList.includes(firstname.toLowerCase() + ' ' + lastname.toLowerCase())
         ) {
+            console.log(firstnameLastnameList) ;
+            console.log(firstnameLastnameSearch) ;
+            //return false ;
             setIsGeneralError(true)
             if (firstname == '') setMsgGeneral("Le champ \"Nom\" est requis.")
             else if (cardNumber == '') setMsgGeneral("Le champ \"Numéro carte\" est requis.")
             else if (cardsNumberList.includes(cardNumber)) setMsgGeneral("Le \"Numéro carte\" existe déjà.")
+            else if (firstnameLastnameList.includes(firstname.toLowerCase() + ' ' + lastname.toLowerCase())) setMsgGeneral("Le nom et prénom existe déjà.")
             setIsSaving(false)
             hideLoader()
         } else {

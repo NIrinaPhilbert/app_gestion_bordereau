@@ -26,6 +26,8 @@ import BordereauEdit from "./pages/bordereau/BordereauEdit"
 import BordereauShow from "./pages/bordereau/BordereauShow"
 // RAPPORT
 import RapportList from "./pages/rapport/RapportList"
+import RapportListfamilleparticipant from "./pages/rapport/RapportListfamilleparticipant"
+import RapportListfamillenonparticipant from "./pages/rapport/RapportListfamillenonparticipant"
 
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -35,7 +37,8 @@ function Main() {
     	<>
 	        <Router>
 	            <Routes>
-	                <Route exact path="/dashboard" element={<Home/>} />
+	                
+					<Route exact path="/" element={<Home/>} />
 	                <Route path="/users" element={<UserList/>} />
 	                <Route path="/users/new" element={<UserCreate/>} />
 	                <Route path="/users/edit/:id" element={<UserEdit/>} />
@@ -53,6 +56,8 @@ function Main() {
 	                <Route path="/bordereaux/edit/:id" element={<BordereauEdit/>} />
 	                <Route path="/bordereaux/show/:id" element={<BordereauShow/>} />
 	                <Route path="/rapport" element={<RapportList/>} />
+					<Route path="/rapportfamilleparticipant" element={<RapportListfamilleparticipant/>}/>
+					<Route path="/rapportfamillenonparticipant" element={<RapportListfamillenonparticipant/>}/>
 	            </Routes>
 	        </Router>
 	        <ToastContainer style={{ zIndex: 9999999 }} />

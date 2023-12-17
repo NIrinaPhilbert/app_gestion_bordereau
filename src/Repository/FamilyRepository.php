@@ -47,4 +47,26 @@ class FamilyRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+    public function getFamilyNotIn($_tiFamilyId)
+    {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.id NOT IN (:notfamily) AND f.statut = :etat')
+            ->setParameter("notfamily", $_tiFamilyId)
+            ->setParameter("etat", "1")
+            ->getQuery()
+            ->getResult()
+        ;
+        
+    }
+    public function getFamilyNotInWithQuartier($_tiFamilyId, $_oQuartier)
+    {
+        return $this->createQueryBuilder('f')
+            ->andWhere('f.id NOT IN (:notfamily) AND f.statut = :etat AND f.Quartier = :QuartierSearch')
+            ->setParameter("notfamily", $_tiFamilyId)
+            ->setParameter("etat", "1")
+            ->setParameter("QuartierSearch", $_oQuartier)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

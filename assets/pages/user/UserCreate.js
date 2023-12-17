@@ -5,6 +5,11 @@ import BootstrapSelect from 'react-bootstrap-select-dropdown'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
+
+let authorisation_default = process.env.AUTHORISATION_USER_DEFAULT ;
+let oAuthorisationDefault = JSON.parse(authorisation_default) ;
+let toAuthorisationDefaultKeys = Object.keys(oAuthorisationDefault) ;
+console.log(toAuthorisationDefaultKeys) ;
   
 const roleOptions = [
    
@@ -26,6 +31,7 @@ for (var i = 0; i < userStatus.length; i++) {
 const statutOptions = formattedUserStatus
 
 function UserCreate() {
+    const [authorisation, setAuthorisation] = useState('');
     const [firstname, setFirstname] = useState('')
     const [lastname, setLastname] = useState('')
     const [address, setAddress] = useState('')
@@ -78,6 +84,23 @@ function UserCreate() {
             navigate("/users")
         })
     }, [])
+
+    const checkAuthorisation = () => {
+        var oAuthorisationChecked = oAuthorisationDefault ;
+        jQuery('.checkAuthorisation').each(function(){
+            var iValue = 0 ;
+            var zKey = jQuery(this).attr('data-key') ;
+            var zParent = jQuery(this).attr('data-parent') ;
+            if(jQuery(this).is(':checked'))
+            {
+                iValue = 1 ;
+            }
+            oAuthorisationChecked[zParent][zKey] = iValue ;
+        }) ;
+        console.log(oAuthorisationChecked) ;
+        //$('#authorisation_hidden').val(JSON.stringify(oAuthorisationChecked)) ;
+        setAuthorisation(JSON.stringify(oAuthorisationChecked)) ;
+    }
   
     const handleSave = () => {
         setIsSaving(true)
@@ -129,6 +152,7 @@ function UserCreate() {
             formData.append("password", password)
             formData.append("roles", roles)
             formData.append("quartier", quartier)
+            formData.append("authorisation", authorisation)
             axios.post('/api/user_fo/create', formData)
                 .then(function (response) {
                     hideLoader()
@@ -156,6 +180,7 @@ function UserCreate() {
                         setAddress('')
                         setEmail('')
                         setPassword('')
+                        setAuthorisation('')
                         setRoles(['ROLE_ADMIN'])
                         setStatut(['Actif'])
                         navigate("/users")
@@ -318,6 +343,20 @@ function UserCreate() {
                                                 onChange={changeQuartier} />
                                             <label htmlFor="quartier">Quartier <span className="text-bold text-danger text-sm">*</span></label>
                                         </div>
+                                        <div className="form-floating mx-4 mb-3">
+                                            <h5 className="text-muted mx-4 mb-3">Check Authorisation </h5>
+                                            {toAuthorisationDefaultKeys.map((item,index) => (
+                                                <div key={index}>
+                                                    <span>---- {item} ----</span>
+                                                    {Object.keys(oAuthorisationDefault[item]).map((itemchild, indexchild) => (
+                                                        <div key={indexchild}>
+                                                            <input type="checkbox" value={oAuthorisationDefault[item][itemchild]} data-key={itemchild} data-parent={item} className="checkAuthorisation" onClick={(event)=>{checkAuthorisation()}}/><span>{itemchild}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+
                                         <div className="form-floating mx-4 mb-3">
                                             <BootstrapSelect
                                                 id="statut"

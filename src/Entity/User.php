@@ -47,6 +47,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $isVerified = false;
 
+    /**
+     * @ORM\Column(type="text")
+     */
+    private $authorisation;
+
+    public function __construct()
+    {
+        $this->authorisation = '{"quartier":{"menu":0,"add":0,"show":0,"edit":0,"delete":0},"apv":{"menu":0,"add":0,"show":0,"edit":0,"delete":0},"famille":{"menu":0,"add":0,"show":0,"edit":0,"delete":0},"bordereaux":{"menu":0,"add":0,"show":0,"edit":0,"delete":0},"rapport":{"menu":0,"consultation":0},"user":{"menu":0,"add":0,"show":0,"edit":0,"delete":0}}' ;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -161,6 +171,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): self
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getAuthorisation(): ?string
+    {
+        return $this->authorisation;
+    }
+
+    public function setAuthorisation(string $authorisation): self
+    {
+        $this->authorisation = $authorisation;
 
         return $this;
     }

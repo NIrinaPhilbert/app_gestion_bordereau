@@ -110,6 +110,7 @@ class UserFOController extends AbstractController
                     $entityManager = $doctrine->getManager();
                     $user = new User();
                     $user->setEmail($request->request->get('email'));
+                    $user->setAuthorisation($request->request->get('authorisation'));
                     $user->setPassword($passwordEncoder->encodePassword($user, $request->request->get('password')));
                     //$roles = ($request->request->get('roles') == 'ROLE_ADMIN') ? ["ROLE_ADMIN", "ROLE_USER"] : ["ROLE_USER"];
                     if($request->request->get('roles') == 'ROLE_ADMIN'){
@@ -128,6 +129,7 @@ class UserFOController extends AbstractController
                     $userPlatform = new UserPlatform();
                     $userPlatform->setEmail($user);
                     $userPlatform->setCreatedAt(new \DateTime(date('Y-m-d H:i:s')));
+                    
                     $userPlatform->setFirstname($request->request->get('firstname'));
                     $userPlatform->setLastname(!empty($request->request->get('lastname')) ? $request->request->get('lastname') : null);
                     $userPlatform->setPhone(!empty($request->request->get('phone')) ? $request->request->get('phone') : null);
@@ -205,8 +207,11 @@ class UserFOController extends AbstractController
             }
             $roles = (in_array("ROLE_ADMIN", $user->getEmail()->getRoles())) ? "ROLE_ADMIN" : "ROLE_USER";
 
+            $oUser = $user->getEmail() ;
+            
             $data =  [
                 'id' => $user->getId(),
+                'authorisation' => $oUser->getAuthorisation(),
                 'firstname' => $user->getFirstname(),
                 'lastname' => !is_null($user->getLastname()) ? $user->getLastname() : '',
                 'address' => !is_null($user->getAddress()) ? $user->getAddress() : '',
@@ -257,12 +262,14 @@ class UserFOController extends AbstractController
                     $roles = ($request->request->get('roles') == 'ROLE_ADMIN') ? ["ROLE_ADMIN", "ROLE_USER"] : ["ROLE_USER"];
                     $user->setRoles($roles);
                     $user->setIsVerified(true);
+                    $user->setAuthorisation($request->request->get('authorisation'));
                     $entityManager->persist($user);
                     $entityManager->flush();
 
                     $userPlatform->setEmail($user);
                     $userPlatform->setCreatedAt($userPlatform->getCreatedAt());
                     $userPlatform->setEditedAt(new \DateTime(date('Y-m-d H:i:s')));
+                    
                     $userPlatform->setFirstname($request->request->get('firstname'));
                     $userPlatform->setLastname(!empty($request->request->get('lastname')) ? $request->request->get('lastname') : null);
                     $userPlatform->setPhone(!empty($request->request->get('phone')) ? $request->request->get('phone') : null);

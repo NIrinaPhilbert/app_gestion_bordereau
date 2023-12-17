@@ -34,7 +34,7 @@ class FamilyController extends AbstractController
             $iIdQuartierUserConnected = $oQuartierUser->getId();
             $families = $doctrine->getManager()
             ->getRepository(Family::class)
-            ->findBy(["Quartier" => $doctrine->getManager()->getRepository(Quartier::class)->find($iIdQuartierUserConnected)], ['quartier_id' => 'ASC'],['apv_id' => 'ASC']);
+            ->findBy(["Quartier" => $doctrine->getManager()->getRepository(Quartier::class)->find($iIdQuartierUserConnected)]);
 
         }else{
             $families = $doctrine->getManager()
@@ -82,6 +82,7 @@ class FamilyController extends AbstractController
 
         $apvOptions = array();
         $cardsNumberList = array();
+        $tzNomPrenomFamilleListe = array() ;
         if ($stateAuth['success']) {
             $apvs = $doctrine->getManager()
                 ->getRepository(Apv::class)
@@ -98,11 +99,13 @@ class FamilyController extends AbstractController
                 ->findAll();
             foreach ($families as $keyFam => $family) {
                 $cardsNumberList[] = $family->getCardNumber();
+                $tzNomPrenomFamilleList[] = utf8_encode(strtolower($family->getFirstname() . ' ' . trim($family->getLastname()))) ;
             }
         }
   
         return $this->json([
             "cardsNumberList" => $cardsNumberList,
+            'tzNomPrenomFamilleList' => $tzNomPrenomFamilleList,
             "apvOptions" => $apvOptions
         ]);
     }
@@ -230,7 +233,7 @@ class FamilyController extends AbstractController
             foreach ($quartiers as $keyQuartier => $quartier) {
                 $quartierOptions[] = (object) [
                     'labelKey' => $quartier->getId(),
-                    'value' => $quartier->getLibelle(),
+                    'value' => $quartier->getNumero(),
                     'isSelected' => ($quartier->getId() == $family->getQuartier()->getId()) ? true : false
                 ];
             }
@@ -238,6 +241,7 @@ class FamilyController extends AbstractController
             $apvs = $doctrine->getManager()
                 ->getRepository(Apv::class)
                 ->findAll();
+            
             foreach ($apvs as $keyApv => $apv) {
                 $apvOptions[] = (object) [
                     'labelKey' => $apv->getId(),
@@ -245,6 +249,7 @@ class FamilyController extends AbstractController
                     'isSelected' => ($apv->getId() == $family->getApv()->getId()) ? true : false
                 ];
             }
+            
             $statutOptions = array();
             $tApvStatus = explode('|', $_ENV['FAMILY_STATUS']);
             $statut = $family->isStatut() ? 0 : 1;
@@ -310,6 +315,7 @@ class FamilyController extends AbstractController
                 if ($request->request->get('lastname') != '') $family->setLastname($request->request->get('lastname'));
                 if ($request->request->get('address') != '') $family->setAddress($request->request->get('address'));
                 $family->setApv($doctrine->getRepository(Apv::class)->find($request->request->get('apv')));
+                $family->setQuartier($doctrine->getRepository(Quartier::class)->find($request->request->get('quartier')));
                 $family->setCardNumber($request->request->get('cardNumber'));
                 $family->setDateIn(new \DateTime($request->request->get('dateIn')));
                 if ($request->request->get('dateOut') != 'null') $family->setDateOut(new \DateTime($request->request->get('dateOut')));

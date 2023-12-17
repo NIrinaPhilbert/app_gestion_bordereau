@@ -29,6 +29,7 @@ function FamilyEdit() {
     const [msgGeneral, setMsgGeneral] = useState('')
     const [isFetched, setIsFetched] = useState(false)
     const navigate = useNavigate()
+    console.log('ICI Family Edit')
 
     useEffect(() => {
     	setIsGeneralError(false)
@@ -43,8 +44,10 @@ function FamilyEdit() {
             setLastname(family.lastname)
             setCardsNumberList(family.cardsNumberList)
             setQuartier(family.quartier)
-            setQuartierOptions(family.quartierOptionsOptions)
+            setQuartierOptions(family.quartierOptions)
+            console.log(family.quartierOptions) ;
             setApvOptions(family.apvOptions)
+            console.log(family.apvOptions) ;
             setApv(family.apv)
             setCardNumber(family.cardNumber)
             setDateIn(new Date(family.dateIn))
@@ -150,6 +153,7 @@ function FamilyEdit() {
     }
     const changeQuartier = (selectedOptions) => {
         let quartierSelected = selectedOptions.selectedKey
+        //console.log(quartierSelected)
         setQuartier(quartierSelected)
         if (quartierSelected != '') {
             setIsSaving(true)
@@ -158,6 +162,8 @@ function FamilyEdit() {
             
             .then(function (response) {
                 setApvOptions(response.data)
+                //console.log(response.data)
+               //S setApv('22')
                 setIsSaving(false)
                 hideLoader()
             })

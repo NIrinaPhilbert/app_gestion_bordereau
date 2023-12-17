@@ -16,6 +16,7 @@ class SecurityController extends AbstractController
     {
         if ($this->getUser()) {
             $redirect = (in_array('ROLE_ADMIN', $this->getUser()->getRoles())) ? '/admin/home' : '/';
+            //$redirect = '/';
             return $this->redirect($redirect);
         }
 

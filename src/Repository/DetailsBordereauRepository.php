@@ -61,6 +61,17 @@ class DetailsBordereauRepository extends ServiceEntityRepository
         ;
     }
 
+    public function getListBorderauxEntreDeuxDates($_zDateDebut, $_zDateFin)
+    {
+        return $this->createQueryBuilder('d')
+            ->join('d.bordereau', 'b')
+            ->where('b.daty BETWEEN :start AND :end')
+            ->setParameter('start', $_zDateDebut)
+            ->setParameter('end', $_zDateFin)
+            ->getQuery()
+            ->getResult();
+    }
+
     // public function findParticipantsRapport($quartier)
     // {
     //     return $this->createQueryBuilder('ps')

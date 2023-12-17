@@ -6,6 +6,8 @@ import Swal from 'sweetalert2'
 const Layout = ({children}) =>{
 	var userRating = document.querySelector('#app')
     var isAuthenticated = userRating.dataset.isAuthenticated
+	//userRating.dataset ==> récupère les variables passés dans l'attribut data-user de la page index.html.twig après SpaController.php
+	//console.log(userRating.dataset) ;
     if (isAuthenticated) {
     	var userFO = JSON.parse(userRating.dataset.user)
     	// console.log(userFO)
@@ -13,7 +15,8 @@ const Layout = ({children}) =>{
     		'email': userFO.mail,
     		'firstname': userFO.fname,
     		'lastname': userFO.lname,
-    		'access': userFO.access
+    		'access': userFO.access,
+			'user_authorisation' : userFO.user_authorisation
     	}
     	localStorage.setItem('mysession', JSON.stringify(userData));
     }
@@ -108,14 +111,7 @@ const Layout = ({children}) =>{
 					</header>
 					<aside id="sidebar" className="sidebar">
 						<ul className="sidebar-nav" id="sidebar-nav">
-							<li className="nav-item">
-								<Link
-									to="/dashboard"
-									className={(currentRoute.includes('/dashboard')) ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
-									<i className="bi bi-grid-fill fs-5"></i>
-									<span>Tableau de bord</span>
-								</Link>
-							</li>
+							
 							{mysession.access == "admin" &&
 								<li className="nav-item">
 									<Link
@@ -126,14 +122,17 @@ const Layout = ({children}) =>{
 									</Link>
 								</li>
 							}
-							<li className="nav-item">
-								<Link
-									to="/quartiers"
-									className={currentRoute.includes('/quartiers') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
-									<i className="bi bi-intersect fs-5"></i>
-									<span>Quartiers</span>
-								</Link>
-							</li>
+							{(mysession.user_authorisation.quartier.menu == 1) ?
+								<li className="nav-item">
+									<Link
+										to="/quartiers"
+										className={currentRoute.includes('/quartiers') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
+										<i className="bi bi-intersect fs-5"></i>
+										<span>Quartiers</span>
+									</Link>
+								</li> : null
+							}
+							{(mysession.user_authorisation.apv.menu == 1) ?
 							<li className="nav-item">
 								<Link
 									to="/apvs"
@@ -141,7 +140,9 @@ const Layout = ({children}) =>{
 									<i className="bi bi-intersect fs-5"></i>
 									<span>APV</span>
 								</Link>
-							</li>
+							</li> : null
+							}
+							{(mysession.user_authorisation.famille.menu == 1) ?
 							<li className="nav-item">
 								<Link
 									to="/families"
@@ -149,7 +150,10 @@ const Layout = ({children}) =>{
 									<i className="bi bi-person-bounding-box fs-5"></i>
 									<span>Familles</span>
 								</Link>
-							</li>
+							</li> : null
+							}
+
+							{(mysession.user_authorisation.bordereaux.menu == 1) ?
 							<li className="nav-item">
 								<Link
 									to="/bordereaux"
@@ -157,13 +161,30 @@ const Layout = ({children}) =>{
 									<i className="bi bi-card-list fs-5"></i>
 									<span>Bordereaux</span>
 								</Link>
-							</li>
+							</li> : null
+							}
 							<li className="nav-item">
 								<Link
 									to="/rapport"
 									className={currentRoute.includes('/rapport') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
 									<i className="bi bi-receipt fs-5"></i>
 									<span>Rapport</span>
+								</Link>
+							</li>
+							<li className="nav-item">
+								<Link
+									to="/rapportfamilleparticipant"
+									className={currentRoute.includes('/rapportfamilleparticipant') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
+									<i className="bi bi-receipt fs-5"></i>
+									<span>Liste famille participant</span>
+								</Link>
+							</li>
+							<li className="nav-item">
+								<Link
+									to="/rapportfamillenonparticipant"
+									className={currentRoute.includes('/rapportfamillenonparticipant') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
+									<i className="bi bi-receipt fs-5"></i>
+									<span>Liste famille non participant</span>
 								</Link>
 							</li>
 						</ul>

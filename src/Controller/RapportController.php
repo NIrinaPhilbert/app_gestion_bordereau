@@ -8,8 +8,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Entity\Quartier;
-use App\Repository\QuartierRepository;
+use App\Entity\Bordereau;
 use App\Entity\DetailsBordereau;
+use App\Repository\QuartierRepository;
+use App\Repository\BordereauRepository;
+use App\Repository\DetailsBordereauRepository;
 use App\Entity\Family;
 use Symfony\Component\Security\Core\Security;
 use App\Service\StateService;
@@ -211,5 +214,118 @@ class RapportController extends AbstractController
         }
   
         return $this->json($data);
+    }
+
+    /**
+     * @Route("/rapport/listnonparticipant", name="rapportnonparticipant_index", methods={"POST"})
+     */
+    public function getlistfamillenonparticipant(Request $request, ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
+    {
+        $stateService = new StateService($security, $params);
+        $stateAuth = $stateService->checkState();
+        $tiFamilyParticipant = array();
+
+        $zDateDuJour    = date('d/m/Y') ;
+        $iAnneeCourante = date('Y') ;
+        $mode = 'list' ;
+        $year = $request->request->get('year');
+        $begin = new \DateTime($request->request->get('begin'));
+        $end = new \DateTime($request->request->get('end'));
+
+        $toDetailsBordereau = $doctrine->getManager()
+            ->getRepository(DetailsBordereau::class)
+            ->getListBorderauxEntreDeuxDates($begin, $end) ;
+        foreach($toDetailsBordereau as $oDetailsBordereau)
+        {
+            $tiFamilyParticipant[] = $oDetailsBordereau->getFamily()->getId() ;
+        }
+        /*
+        $toFamilyNotIn = $doctrine->getManager()
+            ->getRepository(Family::class)
+            ->getFamilyNotIn($tiFamilyParticipant) ;
+        foreach($toFamilyNotIn as $oFamilyNotIn)
+        {
+            echo '<pre>' ;
+            print_r($oFamilyNotIn->getId()) ;
+            echo '</pre>' ;
+        }
+        */
+        
+
+        $oQuartierUser = $security->getUser()->retrieveUserPlatform()->getQuartier();
+        if(!is_null($oQuartierUser)){
+            $iIdQuartierUserConnected = $oQuartierUser->getId();
+            /*
+            $families = $doctrine->getManager()
+            ->getRepository(Family::class)
+            ->findBy(["Quartier" => $doctrine->getManager()->getRepository(Quartier::class)->find($iIdQuartierUserConnected)]);
+            */
+            $oQuartierWhere = $doctrine->getManager()->getRepository(Quartier::class)->find($iIdQuartierUserConnected) ;
+            $families = $doctrine->getManager()
+                ->getRepository(Family::class)
+                ->getFamilyNotInWithQuartier($tiFamilyParticipant, $oQuartierWhere) ;
+        }else{
+            /*
+            $families = $doctrine->getManager()
+                ->getRepository(Family::class)
+                ->findAll();
+            */
+            $families = $doctrine->getManager()
+                ->getRepository(Family::class)
+                ->getFamilyNotIn($tiFamilyParticipant) ;
+        }
+        /*
+        foreach($families as $oFamilyNotIn)
+        {
+            echo '<pre>' ;
+            print_r($oFamilyNotIn->getId()) ;
+            echo '</pre>' ;
+        }
+        
+        echo '<hr/>' ;
+        //echo $QueryDetailBordereau . '<br/>';
+        echo '<pre>' ;
+        print_r($tiFamilyParticipant) ;
+        echo '</pre>' ;
+
+        echo $mode . ' => ' . $year  ;
+        print_r($begin) ;
+        echo '<br/>begin==' ;
+        print_r($end) ;
+        exit() ;
+        */
+
+        $data = [];
+        if ($stateAuth['success']) {
+            if(count($families)> 0){
+                    foreach ($families as $family) {
+                        $apv = (!is_null($family->getApv())) ? $family->getApv()->getLibelle() : '';
+                        $date_in = (!is_null($family->getDateIn())) ? $family->getDateIn() : '';
+                        $address = (!is_null($family->getAddress())) ? $family->getAddress() : '';
+                        $telephone = (!is_null($family->getTelephone())) ? $family->getTelephone() : '';
+                        $profession = (!is_null($family->getProfession())) ? $family->getProfession() : '';
+                        $observation = (!is_null($family->getObservation())) ? $family->getObservation() : '';
+                        $data[] = [
+                            'id' => $family->getId(),
+                            'fullname' => $family->getFullname(),
+                            'quartier' => $family->getQuartier()->getNumero(),
+                            'apv' => $apv,
+                            'cardNumber' => $family->getCardNumber(),
+                            'statut' => $family->isStatut(),
+                            'date_in' => $date_in,
+                            'address' => $address,
+                            'telephone' => $telephone,
+                            'profession' => $profession,
+                            'observation' => $observation,
+                        ];
+                    }
+                }
+        }//end connected
+
+        return $this->json($data);
+        
+        
+  
+        
     }
 }

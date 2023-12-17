@@ -28,6 +28,10 @@ function UserEdit() {
     const [isParameterError, setIsParameterError] = useState(false)
     const [msgParameter, setMsgParameter] = useState('')
     const [isFetched, setIsFetched] = useState(false)
+    const [authorisation, setAuthorisation] = useState('');
+    const [authorisation_default, setAuthorisationDefault] = useState(process.env.AUTHORISATION_USER_DEFAULT);
+    const [oAuthorisationDefault, setAuthorisationDefaultObject] = useState(JSON.parse(process.env.AUTHORISATION_USER_DEFAULT));
+    const [toAuthorisationDefaultKeys, setAuthorisationDefaultKeys] = useState(Object.keys(oAuthorisationDefault));
     const navigate = useNavigate()
 
     if (id == '1') {
@@ -53,6 +57,7 @@ function UserEdit() {
         showLoader()
         axios.get(`/api/user_fo/${id}`)
         .then(function (response) {
+            //console.log(response.data) ;
             let user = response.data
             setRolesOptions(user.rolesOptions)
             setQuartierOptions(user.quartierOptions)
@@ -67,6 +72,14 @@ function UserEdit() {
             setRoles(user.roles)
             setQuartier(user.quartier)
             setStatut(user.statut)
+
+            setAuthorisation(user.authorisation)
+            setAuthorisationDefault(user.authorisation) 
+            
+            setAuthorisationDefaultObject(JSON.parse(user.authorisation)) 
+            setAuthorisationDefaultKeys(Object.keys(oAuthorisationDefault)) 
+            //console.log(user.authorisation)
+
             if (user.quartierOptions.length > 0) {
                 setIsParameterError(false)
                 setMsgParameter("")
@@ -78,6 +91,7 @@ function UserEdit() {
             }
             hideLoader()
             setIsFetched(true)
+            
         })
         .catch(function (error) {
             toast.error('Une erreur est survenue.', {
@@ -94,6 +108,23 @@ function UserEdit() {
         })
     }, [])
   
+    const checkAuthorisation = () => {
+        var oAuthorisationChecked = oAuthorisationDefault ;
+        jQuery('.checkAuthorisation').each(function(){
+            var iValue = 0 ;
+            var zKey = jQuery(this).attr('data-key') ;
+            var zParent = jQuery(this).attr('data-parent') ;
+            if(jQuery(this).is(':checked'))
+            {
+                iValue = 1 ;
+            }
+            oAuthorisationChecked[zParent][zKey] = iValue ;
+        }) ;
+        console.log(oAuthorisationChecked) ;
+        //$('#authorisation_hidden').val(JSON.stringify(oAuthorisationChecked)) ;
+        setAuthorisation(JSON.stringify(oAuthorisationChecked)) ;
+    }
+
     const handleSave = () => {
         setIsSaving(true)
         showLoader()
@@ -142,6 +173,7 @@ function UserEdit() {
             formData.append("password", password)
             formData.append("roles", roles)
             formData.append("quartier", quartier)
+            formData.append("authorisation", authorisation)
             axios.post(`/api/user_fo/edit/${id}`, formData)
                 .then(function (response) {
                     hideLoader()
@@ -169,6 +201,7 @@ function UserEdit() {
                         setAddress('')
                         setEmail('')
                         setPassword('')
+                        setAuthorisation('')
                         setRoles(['ROLE_ADMIN'])
                         setStatut(['Actif'])
                         navigate("/users")
@@ -334,6 +367,19 @@ function UserEdit() {
                                                         className="form-control border border-outline-primary bg-white"
                                                         onChange={changeQuartier} />
                                                     <label htmlFor="quartier">Quartier <span className="text-bold text-danger text-sm">*</span></label>
+                                                </div>
+                                                <div className="form-floating mx-4 mb-3">
+                                                    <h5 className="text-muted mx-4 mb-3">Check Authorisation </h5>
+                                                    {toAuthorisationDefaultKeys.map((item,index) => (
+                                                        <div key={index}>
+                                                            <span>---- {item} ----</span>
+                                                            {Object.keys(oAuthorisationDefault[item]).map((itemchild, indexchild) => (
+                                                                <div key={indexchild}>
+                                                                    <input type="checkbox" checked={(oAuthorisationDefault[item][itemchild] == 1) ? true : false} value={oAuthorisationDefault[item][itemchild]} data-key={itemchild} data-parent={item} className="checkAuthorisation" onClick={(event)=>{checkAuthorisation()}} onChange={(event)=>{checkAuthorisation()}}/><span>{itemchild}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                                 <div className="form-floating mx-4 mb-3">
                                                     <BootstrapSelect

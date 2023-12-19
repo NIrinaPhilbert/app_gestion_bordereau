@@ -23,12 +23,13 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class BordereauController extends AbstractController
 {
     /**
-     * @Route("/bordereau/list", name="bordereau_index", methods={"GET"})
+     * @Route("/bordereau/list/{mode}", name="bordereau_index", methods={"GET"})
      */
-    public function index(ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
+    public function index(string $mode, ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
     {
         $stateService = new StateService($security, $params);
         $stateAuth = $stateService->checkState();
+        $oQuartierUser = $security->getUser()->retrieveUserPlatform()->getQuartier();
 
         $data = [];
         if ($stateAuth['success']) {
@@ -63,6 +64,175 @@ class BordereauController extends AbstractController
                     'valid' => $bordereau->isValid(),
                     'statutText' => $tBordereauStatus[$statut],
                     'total' => number_format($totalTotal, 0, '.', ' ')
+                ];
+            }
+
+            if ($mode == "export") {
+                
+                $data["title"]   = array() ;
+                $data["filters"] = array() ;
+                $data["exports"] = array() ;
+
+                $data["filters"][] = [
+                    'id' => '', 
+                    'number' =>  '',
+                    'quartier' =>  '',
+                    'daty' =>  '',
+                    'owner' =>  '',
+                    'statut' =>  '',
+                    'total' =>  '',
+                    'col8' => '',
+                    'col9' => '',
+                    'col10' => '',
+                    'col11' => '',
+                    'col12' => '',
+                    'col13' => '',
+                    'col14' => '',
+                    'col15' => '',
+                    'col16' => '',
+                ] ;
+                $data["filters"][] = [
+                    'id' => '', 
+                    'number' =>  '',
+                    'quartier' =>  '',
+                    'daty' =>  '',
+                    'owner' =>  '',
+                    'statut' =>  '',
+                    'total' =>  '',
+                    'col8' => '',
+                    'col9' => '',
+                    'col10' => '',
+                    'col11' => '',
+                    'col12' => '',
+                    'col13' => '',
+                    'col14' => '',
+                    'col15' => '',
+                    'col16' => '',
+                ] ;
+                $data["filters"][] = [
+                    'id' => '', 
+                    'number' =>  '',
+                    'quartier' =>  '',
+                    'daty' =>  '',
+                    'owner' =>  '',
+                    'statut' =>  '',
+                    'total' =>  '',
+                    'col8' => '',
+                    'col9' => '',
+                    'col10' => '',
+                    'col11' => '',
+                    'col12' => '',
+                    'col13' => '',
+                    'col14' => '',
+                    'col15' => '',
+                    'col16' => '',
+                ] ;
+                $data["filters"][] = [
+                    'id' => 'ID', 
+                    'number' =>  'Numéro',
+                    'quartier' =>  'Quartier',
+                    'daty' =>  'Date',
+                    'owner' =>  'Auteur',
+                    'statut' =>  'Statut',
+                    'total' =>  'Montant',
+                    'col8' => 'N° carte',
+                    'col9' => 'Famille',
+                    'col10' => 'Hasina',
+                    'col11' => 'Taona',
+                    'col12' => 'Seminera',
+                    'col13' => 'Taona',
+                    'col14' => 'Diosezy',
+                    'col15' => 'Taona',
+                    'col16' => 'Total',
+                ] ;
+                $zQuartierTitre = (!is_null($oQuartierUser)) ? $oQuartierUser->getName() : 'Tous' ;
+                
+                $iKey = 0 ;
+                foreach ($bordereaux as $bordereau) {
+                    $quartier = (!is_null($bordereau->getQuartier())) ? $bordereau->getQuartier()->getName() : '';
+                    $statut = $bordereau->isValid() ? 1 : 0;
+                    $detailsBordereaux = $doctrine->getManager()
+                        ->getRepository(DetailsBordereau::class)
+                        ->findBy(["bordereau" => $bordereau]);
+                    $totalTotal = 0;
+                    foreach ($detailsBordereaux as $keyBordereau => $detailsbordereau) {
+                        $total = $detailsbordereau->getHasina() + $detailsbordereau->getSeminera() + $detailsbordereau->getDiosezy();
+                        $totalTotal += $total;
+                    }
+                    $iCompteurDetail = 0 ;
+                    foreach ($detailsBordereaux as $keyBordereau => $detailsbordereau) {
+                        $totaldetailbordereau = $detailsbordereau->getHasina() + $detailsbordereau->getSeminera() + $detailsbordereau->getDiosezy();
+                        $data['exports'][$iKey] = [
+                            'id' => $bordereau->getId(),
+                            'number' => $bordereau->getNumber(),
+                            'quartier' => $quartier,
+                            'daty' => $bordereau->getDaty()->format("d/m/Y"),
+                            'owner' => $bordereau->getOwner()->getFirstname().(!is_null($bordereau->getOwner()->getLastname()) ? ' '.$bordereau->getOwner()->getLastname() : ''),
+                            'statut' => $tBordereauStatus[$statut],
+                            'total' => number_format($totalTotal, 0, '.', ' '),
+                        ];
+                        $data['exports'][$iKey]['col8'] = $detailsbordereau->getFamily()->getCardNumber() ;
+                        $data['exports'][$iKey]['col9'] =  $detailsbordereau->getFamily()->getFullname();
+                        $data['exports'][$iKey]['col10'] =  $detailsbordereau->getHasina();
+                        $data['exports'][$iKey]['col11'] =  $detailsbordereau->getTaonaHasina();
+                        $data['exports'][$iKey]['col12'] =  $detailsbordereau->getSeminera();
+                        $data['exports'][$iKey]['col13'] =  $detailsbordereau->getTaonaSeminera();
+                        $data['exports'][$iKey]['col14'] = $detailsbordereau->getDiosezy();
+                        $data['exports'][$iKey]['col15'] = $detailsbordereau->getTaonaDiosezy();
+                        $data['exports'][$iKey]['col16'] = number_format($totaldetailbordereau, 0, '.', ' ');
+
+                        if($iCompteurDetail > 0)
+                        {
+                            $data['exports'][$iKey]['id'] =  '' ;
+                            $data['exports'][$iKey]['number'] =  '' ;
+                            $data['exports'][$iKey]['quartier'] =  '' ;
+                            $data['exports'][$iKey]['daty'] =  '' ;
+                            $data['exports'][$iKey]['owner'] =  '' ;
+                            $data['exports'][$iKey]['statut'] =  '' ;
+                            $data['exports'][$iKey]['total'] =  '' ;
+                        }
+
+                        $iKey ++ ;
+                        $iCompteurDetail ++ ;
+                    }
+                    
+                }
+            
+                $data["title"][] = [
+                    'id' =>  'LISTE DES BORDEREAUX ' . $zQuartierTitre,
+                    'number' =>  '',
+                    'quartier' =>  '',
+                    'daty' =>  '',
+                    'owner' =>  '',
+                    'statut' =>  '',
+                    'total' =>  '',
+                    'col8' => '',
+                    'col9' => '',
+                    'col10' => '',
+                    'col11' => '',
+                    'col12' => '',
+                    'col13' => '',
+                    'col14' => '',
+                    'col15' => '',
+                    'col16' => '',
+                ];
+                $data["title"][] = [
+                    'id' =>  '',
+                    'number' =>  '',
+                    'quartier' =>  '',
+                    'daty' =>  '',
+                    'owner' =>  '',
+                    'statut' =>  '',
+                    'total' =>  '',
+                    'col8' => '',
+                    'col9' => '',
+                    'col10' => '',
+                    'col11' => '',
+                    'col12' => '',
+                    'col13' => '',
+                    'col14' => '',
+                    'col15' => '',
+                    'col16' => '',
                 ];
             }
         }

@@ -61,15 +61,36 @@ class DetailsBordereauRepository extends ServiceEntityRepository
         ;
     }
 
-    public function getListBorderauxEntreDeuxDates($_zDateDebut, $_zDateFin)
+    public function findDistinctsYearByQuartier($_oQuartier)
     {
         return $this->createQueryBuilder('d')
+            ->select('DISTINCT(d.taonaHasina) as yearHasina')
             ->join('d.bordereau', 'b')
-            ->where('b.daty BETWEEN :start AND :end')
-            ->setParameter('start', $_zDateDebut)
-            ->setParameter('end', $_zDateFin)
+            ->where('b.quartier = :QuartierSearch')
+            ->setParameter("QuartierSearch", $_oQuartier)
+            ->orderBy('d.taonaHasina', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
+    }
+
+    public function getListBorderauxEntreDeuxDates($_zDateDebut, $_zDateFin, $_zAnnee = "")
+    {
+        
+        $zWhere = ($_zAnnee == "") ? 'b.daty BETWEEN :start AND :end' : 'b.daty BETWEEN :start AND :end AND d.taonaHasina = :taona' ;
+        $oQueryListBorderauxEntreDeuxDates = $this->createQueryBuilder('d') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.bordereau', 'b') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->where($zWhere) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('start', $_zDateDebut) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('end', $_zDateFin) ;
+        if($_zAnnee != "")
+        {
+            $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('taona', $_zAnnee) ;
+        }
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getQuery() ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getResult() ;
+
+        return $oQueryListBorderauxEntreDeuxDates;
     }
 
     // public function findParticipantsRapport($quartier)

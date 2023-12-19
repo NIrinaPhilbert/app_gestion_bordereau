@@ -6,16 +6,19 @@ import DataTable from 'react-data-table-component'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
+import * as XLSX from 'xlsx-js-style'
 
 var bordereauStatus = process.env.BORDEREAU_STATES
 bordereauStatus = bordereauStatus.split('|')
  
 function BordereauList() {
+    const  [bordereauListExport, setBordereauListExport] = useState([])
     const [bordereauList, setBordereauList] = useState([])
     const [bordereauListSearch, setBordereauListSearch] = useState([])
     const [isFecthed, setIsFetched] = useState(false)
     const navigate = useNavigate()
     const shouldRedirect = (localStorage.getItem('mysession') === null) ? true : false
+    //Récupération de session venant de security dans SpaController.php et transmis dans Layout.js
     let mysession = (localStorage.getItem('mysession') !== null) ? JSON.parse(localStorage.getItem('mysession')) : null
 
     if (shouldRedirect) {
@@ -98,55 +101,65 @@ function BordereauList() {
         fetchBordereauList()
     }, [])
   
-    const fetchBordereauList = () => {
+    const fetchBordereauList = (mode = "list") => {
     	setIsFetched(false)
         showLoader()
-        axios.get('/api/bordereau/list')
+        axios.get('/api/bordereau/list/' + mode)
         .then(function (response) {
 			setIsFetched(true)
-			response.data.map((bordereau, key)=>{
-                var validClass = (bordereau.valid) ? 'badge bg-primary' : 'badge bg-warning'
-                bordereau.statut = (
-                    <>
-                        <span className={validClass}>{bordereauStatus[bordereau.valid ? 1 : 0]}</span>
-                        {bordereau.valid && <p className="d-block"><strong>{bordereau.receiver}</strong></p>}
-                    </>
-                )
-                bordereau.actions = (
-                    <>
-                        <Link
-                            className="btn btn-sm btn-outline-dark mx-1"
-                            to={`/bordereaux/show/${bordereau.id}`}>
-                            <i className="bi bi-eye-fill"></i>
-                        </Link>
-                        {((bordereau.valid && mysession.access == "admin") || !bordereau.valid) &&
-                            <>
-                                <Link
-                                    className="btn btn-sm btn-outline-success mx-1"
-                                    to={`/bordereaux/edit/${bordereau.id}`}>
-                                    <i className="bi bi-pencil-square"></i>
-                                </Link>
-                                <button 
-                                    onClick={()=>handleDelete(bordereau.id)}
-                                    className="btn btn-sm btn-outline-danger mx-1">
-                                    <i className="bi bi-trash"></i>
-                                </button>
-                                {(mysession.access == "admin" && !bordereau.valid) &&
+            if (mode == "export") {
+                let toTitle = response.data.title
+                let toFilters = response.data.filters
+                let toExports = response.data.exports
+                let newToExportsFilters = [...toExports.slice(0, 0), ...toFilters, ...toExports.slice(0)]
+                let newToExports = [...newToExportsFilters.slice(0, 0), ...toTitle, ...newToExportsFilters.slice(0)]
+                setBordereauListExport(newToExports)
+                exportToExcel(newToExports)
+            } else {
+                response.data.map((bordereau, key)=>{
+                    var validClass = (bordereau.valid) ? 'badge bg-primary' : 'badge bg-warning'
+                    bordereau.statut = (
+                        <>
+                            <span className={validClass}>{bordereauStatus[bordereau.valid ? 1 : 0]}</span>
+                            {bordereau.valid && <p className="d-block"><strong>{bordereau.receiver}</strong></p>}
+                        </>
+                    )
+                    bordereau.actions = (
+                        <>
+                            <Link
+                                className="btn btn-sm btn-outline-dark mx-1"
+                                to={`/bordereaux/show/${bordereau.id}`}>
+                                <i className="bi bi-eye-fill"></i>
+                            </Link>
+                            {((bordereau.valid && mysession.access == "admin") || !bordereau.valid) &&
+                                <>
+                                    <Link
+                                        className="btn btn-sm btn-outline-success mx-1"
+                                        to={`/bordereaux/edit/${bordereau.id}`}>
+                                        <i className="bi bi-pencil-square"></i>
+                                    </Link>
                                     <button 
-                                        onClick={()=>handleValidate(bordereau)}
-                                        className="btn btn-sm btn-outline-primary mx-1">
-                                        <i className="bi bi-check2-square"></i>
+                                        onClick={()=>handleDelete(bordereau.id)}
+                                        className="btn btn-sm btn-outline-danger mx-1">
+                                        <i className="bi bi-trash"></i>
                                     </button>
-                                }
-                            </>
-                        }
-                    </>
-                )
-                return bordereau
-            })
-			setBordereauList(response.data)
-            setBordereauListSearch(response.data)
-			hideLoader()
+                                    {(mysession.access == "admin" && !bordereau.valid) &&
+                                        <button 
+                                            onClick={()=>handleValidate(bordereau)}
+                                            className="btn btn-sm btn-outline-primary mx-1">
+                                            <i className="bi bi-check2-square"></i>
+                                        </button>
+                                    }
+                                </>
+                            }
+                        </>
+                    )
+                    return bordereau
+                })
+                setBordereauList(response.data)
+                setBordereauListSearch(response.data)
+                hideLoader()
+            }
         })
         .catch(function (error) {
             console.log(error)
@@ -312,6 +325,104 @@ function BordereauList() {
             }
           })
     }
+    const searchRapport = (mode = "list") => {
+        console.log('searchRapport')
+        fetchBordereauList(mode)
+    }
+
+    //DEBUT PROCESSUS EXPORT EXCEL
+    //Style standard des fichiers excels
+    const addStylesToDataCells = (ws, rowCount) => {
+       
+        // Customize the style for data cells (add borders)
+        var zValeurPremiereColonneDeLigne = '' ;
+        
+        for (let row = 6; row <= rowCount; row++) {
+            var iCountDetectEtoile = 0 ;
+            for (let col = 0; col <= ws['!cols'].length; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                zValeurPremiereColonneDeLigne = (col == 0) ? cellAddress : '' ;
+                
+                
+
+                // Check if the cell exists, create it if it doesn't
+                if (!ws[cellAddress]) {
+                ws[cellAddress] = { v: '' }; // You can set the default value if needed
+                }
+
+                ws[cellAddress].s = {
+                    font: {
+                        //bold: ((row == 3 && col >= 0 && col <= 4) || (row == 6 && col >= 0 && col <= 4) || (row == (rowCount-3) && col == 0) || (row >= (rowCount-2) && row <= rowCount && col == 3)) ? true : false 
+                        bold: ((row == 6) || (zValeurPremiereColonneDeLigne != '')) ? true : false 
+                    },
+                    border: {
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } },
+                    },
+                    alignment: {
+                        vertical: "center"
+                    },
+                    wrapText: true
+                };
+            }
+            
+        }
+       
+    }
+    const exportToExcel = (dataToExport) => {
+        const ws = XLSX.utils.json_to_sheet(dataToExport)
+        // Customize the style for the header row (make it bold)
+        ws['!cols'] = dataToExport[0] ? Object.keys(dataToExport[0]).map(() => ({ wch: 20 })) : [];
+        ws['!rows'] = [{ hpx: 20 }]; // Make the first row (header) bold
+        // Remove the header row
+        const headerRow = 0;
+        const lastCol = ws['!cols'].length;
+        for (let col = 0; col <= lastCol; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: col });
+            delete ws[cellAddress];
+        }
+        for (let col = 0; col <= 15; col++) {
+            let cellBoldAddress = XLSX.utils.encode_cell({ r: 1, c: col });
+            ws[cellBoldAddress].s = {
+                font: { bold: true },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+            
+            let cellBoldAddress2 = XLSX.utils.encode_cell({ r: 3, c: col });
+            ws[cellBoldAddress2].s = {
+                font: { bold: true },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+            
+            let cellNoBoldAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+            ws[cellNoBoldAddress].s = {
+                font: { bold: false },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+        }
+        //console.log()
+        var toLigneAfusionner = addStylesToDataCells(ws, dataToExport.length)
+        
+        ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 15 } }]; //Pour fusionner le grand titre sur la première ligne (r:1)
+        
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet 1')
+        XLSX.writeFile(wb, 'Liste-bordereaux.xlsx')
+        hideLoader()
+    }
+    //FIN PROCESSUS EXPORT EXCEL
   
     return (
         <Layout>
@@ -331,17 +442,25 @@ function BordereauList() {
                         <div className="card mt-3">
                             <div className="card-body p-3">
                             	<div className="mb-2 mt-1">
-                                	<Link
-                                        to="/bordereaux/new"
-                                        className="btn btn-sm btn-outline-primary mx-1">
-                                        <i className="bi bi-plus-circle me-1"></i>
-                                        Créer
-                                    </Link>
+                                    {(mysession.user_authorisation.bordereaux.add == 1) ?
+                                        <Link
+                                            to="/bordereaux/new"
+                                            className="btn btn-sm btn-outline-primary mx-1">
+                                            <i className="bi bi-plus-circle me-1"></i>
+                                            Créer
+                                        </Link> : null
+                                    }
                                     <button 
                                         onClick={()=>handleRefresh()}
                                         className="btn btn-sm btn-outline-secondary mx-1">
                                         <i className="bi bi-bootstrap-reboot me-1"></i>
                                         Actualiser
+                                    </button>
+                                    <button 
+                                        onClick={(e)=>{e.preventDefault(); searchRapport("export");}}
+                                        className="btn btn-sm btn-outline-dark mx-1">
+                                        <i className="bi bi-file-excel-fill me-1"></i>
+                                        Export EXCEL
                                     </button>
             					</div>
                                 <div className="mb-1 mt-3 px-2 py-3">

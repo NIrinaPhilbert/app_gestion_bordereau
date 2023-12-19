@@ -9,10 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
 import axios from 'axios'
-import * as XLSX from 'xlsx-js-style';
-
-var familyStatus = process.env.FAMILY_STATUS
-familyStatus = familyStatus.split('|')
+import * as XLSX from 'xlsx-js-style'
 
 function formatDate(date) {
     var d = new Date(date),
@@ -33,6 +30,7 @@ function RapportListfamillenonparticipant() {
     const navigate = useNavigate()
     const shouldRedirect = (localStorage.getItem('mysession') === null) ? true : false
     const [familyListSearch, setFamilyListSearch] = useState([])
+    const [rapportListExport, setRapportListExport] = useState([])
     //=============================================//
     const initialSearch = {
         
@@ -40,7 +38,6 @@ function RapportListfamillenonparticipant() {
         quartier: '',
         apv: '',
         cardNumber: '',
-        statut: '',
         date_in: '',
         address: '',
         telephone: '',
@@ -105,12 +102,6 @@ function RapportListfamillenonparticipant() {
             cell: row => <div style={{display: 'block'}}>{row.cardNumber}</div>
         },
         {
-            name: 'Statut',
-            selector: row => row.statut,
-            sortable: true,
-            cell: row => <div style={{display: 'block'}}>{row.statut}</div>
-        },
-        {
             name: 'Date entrée',
             selector: row => row.date_in,
             sortable: true,
@@ -167,10 +158,30 @@ function RapportListfamillenonparticipant() {
             setBoutonVisible(false) ;
         }
         */
+        fetchListeAnneeByUser()
         fetchRapportList()
     }, [])
     
-
+    const fetchListeAnneeByUser = () => {
+        let formData = new FormData()
+        axios.post('/api/rapport/listeanneebyuser', formData)
+        .then(function (response) {
+            setYearsData(response.data.years)
+        })
+        .catch(function (error) {
+            console.log(error)
+            toast.error('Une erreur est survenue.', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+            });
+        })
+    }
     const fetchRapportList = (isLoading = true, mode = "list") => {
         let dataSearch1 = {...searchData1}
         if (isLoading) {
@@ -180,6 +191,7 @@ function RapportListfamillenonparticipant() {
         console.log(dataSearch1.begin)
         let formData = new FormData()
         formData.append("action", "search")
+        formData.append("nonparticipant", "vrai")
         formData.append("mode", mode)
         formData.append("year", dataSearch1.year)
         formData.append("begin", formatDate(dataSearch1.begin))
@@ -187,32 +199,49 @@ function RapportListfamillenonparticipant() {
         axios.post('/api/rapport/listnonparticipant', formData)
         .then(function (response) {
             setIsFetched(true)
-			response.data.map((family, key)=>{
-                var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
-                /*family.statut = (
-                    <span className={statutClass}>{familyStatus[family.statut ? 0 : 1]}</span>
-                )*/
-                family.date_in = formatDate(family.date_in)
-                family.statut = familyStatus[family.statut ? 0 : 1]
-                family.actions = (
-                    <>
-                        <Link
-                            className="btn btn-sm btn-outline-success mx-1"
-                            to={`/families/edit/${family.id}`}>
-                            <i className="bi bi-pencil-square"></i>
-                        </Link>
-                        <button 
-                            onClick={()=>handleDelete(family.id)}
-                            className="btn btn-sm btn-outline-danger mx-1">
-                            <i className="bi bi-trash"></i>
-                        </button>
-                    </>
-                )
-                return family
-            })
-			setFamilyList(response.data)
-            setFamilyListSearch(response.data)
-			hideLoader()
+            if (mode == "export") {
+                console.log('export excel')
+                console.log(response.data)
+                
+                let toTitle = response.data.title
+                let toFilters = response.data.filters
+                let toExports = response.data.exports
+                let newToExportsFilters = [...toExports.slice(0, 0), ...toFilters, ...toExports.slice(0)]
+                let newToExports = [...newToExportsFilters.slice(0, 0), ...toTitle, ...newToExportsFilters.slice(0)]
+                setRapportListExport(newToExports)
+                exportToExcel(newToExports)
+                
+                
+            } else {
+                response.data.map((family, key)=>{
+                    var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
+                    /*family.statut = (
+                        <span className={statutClass}>{familyStatus[family.statut ? 0 : 1]}</span>
+                    )*/
+                    family.date_in = formatDate(family.date_in)
+                    family.actions = (
+                        <>
+                            <Link
+                                className="btn btn-sm btn-outline-success mx-1"
+                                to={`/families/edit/${family.id}`}>
+                                <i className="bi bi-pencil-square"></i>
+                            </Link>
+                            <button 
+                                onClick={()=>handleDelete(family.id)}
+                                className="btn btn-sm btn-outline-danger mx-1">
+                                <i className="bi bi-trash"></i>
+                            </button>
+                        </>
+                    )
+                    return family
+                })
+                setFamilyList(response.data)
+                setFamilyListSearch(response.data)
+                hideLoader()
+
+            }
+            
+			
         })
         .catch(function (error) {
             console.log(error)
@@ -334,7 +363,6 @@ function RapportListfamillenonparticipant() {
                 thisFamily.quartier.toLowerCase().includes(searchData.quartier.toLowerCase()) && 
                 thisFamily.apv.toLowerCase().includes(searchData.apv.toLowerCase()) &&
                 thisFamily.cardNumber.toLowerCase().includes(searchData.cardNumber.toLowerCase()) &&
-                thisFamily.statut.toLowerCase().includes(searchData.statut.toString().toLowerCase()) &&
                 thisFamily.date_in.toLowerCase().includes(searchData.date_in.toString().toLowerCase()) &&
                 thisFamily.address.toLowerCase().includes(searchData.address.toString().toLowerCase()) &&
                 thisFamily.telephone.toLowerCase().includes(searchData.telephone.toString().toLowerCase()) &&
@@ -346,6 +374,86 @@ function RapportListfamillenonparticipant() {
         
         
         setFamilyList(filteredFamilies)
+    }
+    //Style standard des fichiers excels
+    const addStylesToDataCells = (ws, rowCount) => {
+        // Customize the style for data cells (add borders)
+        for (let row = 6; row <= rowCount; row++) {
+          for (let col = 0; col <= ws['!cols'].length; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+
+            // Check if the cell exists, create it if it doesn't
+            if (!ws[cellAddress]) {
+              ws[cellAddress] = { v: '' }; // You can set the default value if needed
+            }
+
+            ws[cellAddress].s = {
+                font: {
+                    //bold: ((row == 3 && col >= 0 && col <= 4) || (row == 6 && col >= 0 && col <= 4) || (row == (rowCount-3) && col == 0) || (row >= (rowCount-2) && row <= rowCount && col == 3)) ? true : false 
+                    bold: (row == 6) ? true : false 
+                },
+                border: {
+                    top: { style: 'thin', color: { rgb: '000000' } },
+                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                    left: { style: 'thin', color: { rgb: '000000' } },
+                    right: { style: 'thin', color: { rgb: '000000' } },
+                },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+          }
+        }
+    }
+    const exportToExcel = (dataToExport) => {
+        const ws = XLSX.utils.json_to_sheet(dataToExport)
+        // Customize the style for the header row (make it bold)
+        ws['!cols'] = dataToExport[0] ? Object.keys(dataToExport[0]).map(() => ({ wch: 20 })) : [];
+        ws['!rows'] = [{ hpx: 20 }]; // Make the first row (header) bold
+        // Remove the header row
+        const headerRow = 0;
+        const lastCol = ws['!cols'].length;
+        for (let col = 0; col <= lastCol; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: col });
+            delete ws[cellAddress];
+        }
+        for (let col = 0; col <= 9; col++) {
+            let cellBoldAddress = XLSX.utils.encode_cell({ r: 1, c: col });
+            ws[cellBoldAddress].s = {
+                font: { bold: true },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+            
+            let cellBoldAddress2 = XLSX.utils.encode_cell({ r: 3, c: col });
+            ws[cellBoldAddress2].s = {
+                font: { bold: true },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+            
+            let cellNoBoldAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+            ws[cellNoBoldAddress].s = {
+                font: { bold: false },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+        }
+        //console.log()
+        addStylesToDataCells(ws, dataToExport.length)
+        ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }]; //Pour fusionner le grand titre sur la première ligne (r:1)
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet 1')
+        XLSX.writeFile(wb, 'Liste-non-participants.xlsx')
+        hideLoader()
     }
 
     //=====================================================================//
@@ -430,6 +538,12 @@ function RapportListfamillenonparticipant() {
                             className="btn btn-sm btn-outline-secondary me-3 mt-3 mb-2">
                             <i className="bi bi-bootstrap-reboot me-1"></i>
                             Réinitialiser
+                        </button>
+                        <button 
+                            onClick={(e)=>{e.preventDefault(); searchRapport("export");}}
+                            className="btn btn-sm btn-outline-dark mt-3 mb-2">
+                            <i className="bi bi-file-excel-fill me-1"></i>
+                            Export EXCEL
                         </button>
                         
                     </div>

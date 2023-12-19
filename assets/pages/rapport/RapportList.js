@@ -206,6 +206,7 @@ function RapportList() {
     }
 
     const exportToExcel = (dataToExport) => {
+        console.log(dataToExport)
         const ws = XLSX.utils.json_to_sheet(dataToExport)
         // Customize the style for the header row (make it bold)
         ws['!cols'] = dataToExport[0] ? Object.keys(dataToExport[0]).map(() => ({ wch: 20 })) : [];

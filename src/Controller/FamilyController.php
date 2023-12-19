@@ -23,9 +23,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class FamilyController extends AbstractController
 {
     /**
-     * @Route("/family/list", name="family_index", methods={"GET"})
+     * @Route("/family/list/{mode}", name="family_index", methods={"GET"})
      */
-    public function index(ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
+    public function index(string $mode, ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
     {
         $stateService = new StateService($security, $params);
         $stateAuth = $stateService->checkState();
@@ -45,28 +45,140 @@ class FamilyController extends AbstractController
         $data = [];
         if ($stateAuth['success']) {
             if(count($families)> 0){
-                    foreach ($families as $family) {
-                        $apv = (!is_null($family->getApv())) ? $family->getApv()->getLibelle() : '';
-                        $date_in = (!is_null($family->getDateIn())) ? $family->getDateIn() : '';
-                        $address = (!is_null($family->getAddress())) ? $family->getAddress() : '';
-                        $telephone = (!is_null($family->getTelephone())) ? $family->getTelephone() : '';
-                        $profession = (!is_null($family->getProfession())) ? $family->getProfession() : '';
-                        $observation = (!is_null($family->getObservation())) ? $family->getObservation() : '';
-                        $data[] = [
-                            'id' => $family->getId(),
-                            'fullname' => $family->getFullname(),
-                            'quartier' => $family->getQuartier()->getNumero(),
-                            'apv' => $apv,
-                            'cardNumber' => $family->getCardNumber(),
-                            'statut' => $family->isStatut(),
-                            'date_in' => $date_in,
-                            'address' => $address,
-                            'telephone' => $telephone,
-                            'profession' => $profession,
-                            'observation' => $observation,
-                        ];
-                    }
+                foreach ($families as $family) {
+                    $apv = (!is_null($family->getApv())) ? $family->getApv()->getLibelle() : '';
+                    $date_in = (!is_null($family->getDateIn())) ? $family->getDateIn() : '';
+                    $address = (!is_null($family->getAddress())) ? $family->getAddress() : '';
+                    $telephone = (!is_null($family->getTelephone())) ? $family->getTelephone() : '';
+                    $profession = (!is_null($family->getProfession())) ? $family->getProfession() : '';
+                    $observation = (!is_null($family->getObservation())) ? $family->getObservation() : '';
+                    $data[] = [
+                        'id' => $family->getId(),
+                        'fullname' => $family->getFullname(),
+                        'quartier' => $family->getQuartier()->getNumero(),
+                        'apv' => $apv,
+                        'cardNumber' => $family->getCardNumber(),
+                        'statut' => $family->isStatut(),
+                        'date_in' => $date_in,
+                        'address' => $address,
+                        'telephone' => $telephone,
+                        'profession' => $profession,
+                        'observation' => $observation,
+                    ];
                 }
+
+                if ($mode == "export") {
+                
+                    $data["title"]   = array() ;
+                    $data["filters"] = array() ;
+                    $data["exports"] = array() ;
+    
+                    $data["filters"][] = [
+                        'id' =>  '',
+                        'fullname' =>  '',
+                        'quartier' =>  '',
+                        'apv' =>  '',
+                        'cardNumber' =>  '',
+                        'statut' => '',
+                        'date_in' =>  '',
+                        'address' =>  '',
+                        'telephone' =>  '',
+                        'profession' =>  '',
+                        'observation' =>  '',
+                    ] ;
+                    $data["filters"][] = [
+                        'id' =>  '',
+                        'fullname' =>  '',
+                        'quartier' =>  '',
+                        'apv' =>  '',
+                        'cardNumber' =>  '',
+                        'statut' => '',
+                        'date_in' =>  '',
+                        'address' =>  '',
+                        'telephone' =>  '',
+                        'profession' =>  '',
+                        'observation' =>  '',
+                    ] ;
+                    $data["filters"][] = [
+                        'id' =>  '',
+                        'fullname' =>  '',
+                        'quartier' =>  '',
+                        'apv' =>  '',
+                        'cardNumber' =>  '',
+                        'statut' => '',
+                        'date_in' =>  '',
+                        'address' =>  '',
+                        'telephone' =>  '',
+                        'profession' =>  '',
+                        'observation' =>  '',
+                    ] ;
+                    $data["filters"][] = [
+                        'id' =>  'ID',
+                        'fullname' =>  'Nom et Prénoms',
+                        'quartier' =>  'Quartier',
+                        'apv' =>  'APV',
+                        'cardNumber' =>  'Numéro Carte',
+                        'statut' => 'Statut',
+                        'date_in' =>  'Date d\'entrée',
+                        'address' =>  'Adresse',
+                        'telephone' =>  'Tel',
+                        'profession' =>  'Profession',
+                        'observation' =>  'Observation',
+                    ] ;
+                    $zQuartierTitre = (!is_null($oQuartierUser)) ? $oQuartierUser->getName() : 'Tous' ;
+                    if(count($families)> 0){
+                        $iKey = 0 ;
+                        foreach ($families as $family) {
+                            $apv = (!is_null($family->getApv())) ? $family->getApv()->getLibelle() : '';
+                            $date_in = (!is_null($family->getDateIn())) ? $family->getDateIn() : '';
+                            $address = (!is_null($family->getAddress())) ? $family->getAddress() : '';
+                            $telephone = (!is_null($family->getTelephone())) ? $family->getTelephone() : '';
+                            $profession = (!is_null($family->getProfession())) ? $family->getProfession() : '';
+                            $observation = (!is_null($family->getObservation())) ? $family->getObservation() : '';
+                            $data["exports"][$iKey] = [
+                                'id' => $family->getId(),
+                                'fullname' => $family->getFullname(),
+                                'quartier' => $family->getQuartier()->getNumero(),
+                                'apv' => $apv,
+                                'cardNumber' => $family->getCardNumber(),
+                                'statut' => ($family->isStatut()) ? 'actif' : 'inactif',
+                                'date_in' => $date_in->format('d/m/Y'),
+                                'address' => $address,
+                                'telephone' => $telephone,
+                                'profession' => $profession,
+                                'observation' => $observation
+                            ];
+                            $iKey ++ ;
+                        }
+                    }
+                    $data["title"][] = [
+                        'id' =>  'LISTE DES FAMILLES ' . $zQuartierTitre,
+                        'fullname' =>  '',
+                        'quartier' =>  '',
+                        'apv' =>  '',
+                        'cardNumber' =>  '',
+                        'statut' => '',
+                        'date_in' =>  '',
+                        'address' =>  '',
+                        'telephone' =>  '',
+                        'profession' =>  '',
+                        'observation' =>  '',
+                    ];
+                    $data["title"][] = [
+                        'id' =>  '',
+                        'fullname' =>  '',
+                        'quartier' =>  '',
+                        'apv' =>  '',
+                        'cardNumber' =>  '',
+                        'statut' => '',
+                        'date_in' =>  '',
+                        'address' =>  '',
+                        'telephone' =>  '',
+                        'profession' =>  '',
+                        'observation' =>  '',
+                    ];
+                }
+            }
         }//end connected
 
         return $this->json($data);

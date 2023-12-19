@@ -163,14 +163,16 @@ const Layout = ({children}) =>{
 								</Link>
 							</li> : null
 							}
-							<li className="nav-item">
-								<Link
-									to="/rapport"
-									className={currentRoute.includes('/rapport') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
-									<i className="bi bi-receipt fs-5"></i>
-									<span>Rapport</span>
-								</Link>
-							</li>
+							{(mysession.user_authorisation.rapport.menu == 1) ?
+								<li className="nav-item">
+									<Link
+										to="/rapport"
+										className={currentRoute.includes('/rapport') ? 'nav-link border-radius-0' : 'nav-link border-radius-0 collapsed'}>
+										<i className="bi bi-receipt fs-5"></i>
+										<span>Rapport</span>
+									</Link>
+								</li> : menu
+							}
 							<li className="nav-item">
 								<Link
 									to="/rapportfamilleparticipant"

@@ -6,6 +6,7 @@ import DataTable from 'react-data-table-component'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
+import * as XLSX from 'xlsx-js-style'
 
 var familyStatus = process.env.FAMILY_STATUS
 familyStatus = familyStatus.split('|')
@@ -24,8 +25,10 @@ function formatDate(date) {
     return [year, month, day].join('-');
 }
 function FamilyList() {
+    const  [familyListExport, setFamilyListExport] = useState([])
     const  [familyList, setFamilyList] = useState([])
     const  [isFecthed, setIsFetched] = useState(false)
+    const  [nombreActif, setNombreActif] = useState(0)
     const navigate = useNavigate()
     const shouldRedirect = (localStorage.getItem('mysession') === null) ? true : false
     const [familyListSearch, setFamilyListSearch] = useState([])
@@ -154,42 +157,61 @@ function FamilyList() {
         fetchFamilyList()
     }, [])
   
-    const fetchFamilyList = () => {
+    const fetchFamilyList = (mode = "list") => {
     	setIsFetched(false)
         showLoader()
-        axios.get('/api/family/list')
+        axios.get('/api/family/list/' + mode)
         .then(function (response) {
 			setIsFetched(true)
-			response.data.map((family, key)=>{
-                var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
-                /*family.statut = (
-                    <span className={statutClass}>{familyStatus[family.statut ? 0 : 1]}</span>
-                )*/
-                family.date_in = formatDate(family.date_in)
-                family.statut = familyStatus[family.statut ? 0 : 1]
-                family.actions = (
-                    <>
-                        {(mysession.user_authorisation.famille.edit == 1) ?
-                            <Link
-                                className="btn btn-sm btn-outline-success mx-1"
-                                to={`/families/edit/${family.id}`}>
-                                <i className="bi bi-pencil-square"></i>
-                            </Link> : null
-                        }
-                        {(mysession.user_authorisation.famille.delete == 1) ?
-                            <button 
-                                onClick={()=>handleDelete(family.id)}
-                                className="btn btn-sm btn-outline-danger mx-1">
-                                <i className="bi bi-trash"></i>
-                            </button> : null
-                        }
-                    </>
-                )
-                return family
-            })
-			setFamilyList(response.data)
-            setFamilyListSearch(response.data)
-			hideLoader()
+            if (mode == "export") {
+                console.log('export excel')
+                console.log(response.data)
+                
+                let toTitle = response.data.title
+                let toFilters = response.data.filters
+                let toExports = response.data.exports
+                let newToExportsFilters = [...toExports.slice(0, 0), ...toFilters, ...toExports.slice(0)]
+                let newToExports = [...newToExportsFilters.slice(0, 0), ...toTitle, ...newToExportsFilters.slice(0)]
+                setFamilyListExport(newToExports)
+                exportToExcel(newToExports)
+            } else {
+                var iNombreActif = 0 ;
+                response.data.map((family, key)=>{
+                    if(family.statut)
+                    {
+                        iNombreActif ++ ;
+                    }
+                    var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
+                    /*family.statut = (
+                        <span className={statutClass}>{familyStatus[family.statut ? 0 : 1]}</span>
+                    )*/
+                    family.date_in = formatDate(family.date_in)
+                    family.statut = familyStatus[family.statut ? 0 : 1]
+                    family.actions = (
+                        <>
+                            {(mysession.user_authorisation.famille.edit == 1) ?
+                                <Link
+                                    className="btn btn-sm btn-outline-success mx-1"
+                                    to={`/families/edit/${family.id}`}>
+                                    <i className="bi bi-pencil-square"></i>
+                                </Link> : null
+                            }
+                            {(mysession.user_authorisation.famille.delete == 1) ?
+                                <button 
+                                    onClick={()=>handleDelete(family.id)}
+                                    className="btn btn-sm btn-outline-danger mx-1">
+                                    <i className="bi bi-trash"></i>
+                                </button> : null
+                            }
+                        </>
+                    )
+                    return family
+                })
+                setNombreActif(iNombreActif)
+                setFamilyList(response.data)
+                setFamilyListSearch(response.data)
+                hideLoader()
+            }
         })
         .catch(function (error) {
             console.log(error)
@@ -300,6 +322,94 @@ function FamilyList() {
         setFamilyList(filteredFamilies)
     }
 
+    const searchRapport = (mode = "list") => {
+        console.log('searchRapport')
+        fetchFamilyList(mode)
+    }
+
+    //DEBUT PROCESSUS EXPORT EXCEL
+    //Style standard des fichiers excels
+    const addStylesToDataCells = (ws, rowCount) => {
+        // Customize the style for data cells (add borders)
+        for (let row = 6; row <= rowCount; row++) {
+          for (let col = 0; col <= ws['!cols'].length; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+
+            // Check if the cell exists, create it if it doesn't
+            if (!ws[cellAddress]) {
+              ws[cellAddress] = { v: '' }; // You can set the default value if needed
+            }
+
+            ws[cellAddress].s = {
+                font: {
+                    //bold: ((row == 3 && col >= 0 && col <= 4) || (row == 6 && col >= 0 && col <= 4) || (row == (rowCount-3) && col == 0) || (row >= (rowCount-2) && row <= rowCount && col == 3)) ? true : false 
+                    bold: (row == 6) ? true : false 
+                },
+                border: {
+                    top: { style: 'thin', color: { rgb: '000000' } },
+                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                    left: { style: 'thin', color: { rgb: '000000' } },
+                    right: { style: 'thin', color: { rgb: '000000' } },
+                },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+          }
+        }
+    }
+    const exportToExcel = (dataToExport) => {
+        const ws = XLSX.utils.json_to_sheet(dataToExport)
+        // Customize the style for the header row (make it bold)
+        ws['!cols'] = dataToExport[0] ? Object.keys(dataToExport[0]).map(() => ({ wch: 20 })) : [];
+        ws['!rows'] = [{ hpx: 20 }]; // Make the first row (header) bold
+        // Remove the header row
+        const headerRow = 0;
+        const lastCol = ws['!cols'].length;
+        for (let col = 0; col <= lastCol; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: col });
+            delete ws[cellAddress];
+        }
+        for (let col = 0; col <= 10; col++) {
+            let cellBoldAddress = XLSX.utils.encode_cell({ r: 1, c: col });
+            ws[cellBoldAddress].s = {
+                font: { bold: true },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+            
+            let cellBoldAddress2 = XLSX.utils.encode_cell({ r: 3, c: col });
+            ws[cellBoldAddress2].s = {
+                font: { bold: true },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+            
+            let cellNoBoldAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+            ws[cellNoBoldAddress].s = {
+                font: { bold: false },
+                alignment: {
+                    vertical: "center"
+                },
+                wrapText: true
+            };
+        }
+        //console.log()
+        addStylesToDataCells(ws, dataToExport.length)
+        ws['!merges'] = [{ s: { r: 1, c: 0 }, e: { r: 1, c: 10 } }]; //Pour fusionner le grand titre sur la première ligne (r:1)
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet 1')
+        XLSX.writeFile(wb, 'Liste-familles.xlsx')
+        hideLoader()
+    }
+    //FIN PROCESSUS EXPORT EXCEL
+
     //=====================================================================//
     return (
         <Layout>
@@ -334,7 +444,16 @@ function FamilyList() {
                                         <i className="bi bi-bootstrap-reboot me-1"></i>
                                         Actualiser
                                     </button>
+                                    <button 
+                                        onClick={(e)=>{e.preventDefault(); searchRapport("export");}}
+                                        className="btn btn-sm btn-outline-dark mx-1">
+                                        <i className="bi bi-file-excel-fill me-1"></i>
+                                        Export EXCEL
+                                    </button>
             					</div>
+                                <div className="mb-1 mt-3 px-2 py-3">
+                                    <span className="btn-info">Nombre de familles actifs: {nombreActif}</span>
+                                </div>
                                 <div className="mb-1 mt-3 px-2 py-3">
                                         <div className="w-100 border border-radius-0 p-3">
                                             <div className="row">

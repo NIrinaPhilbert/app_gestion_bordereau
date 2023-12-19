@@ -227,77 +227,130 @@ class RapportController extends AbstractController
 
         $zDateDuJour    = date('d/m/Y') ;
         $iAnneeCourante = date('Y') ;
-        $mode = 'list' ;
+        $nonparticipant = $request->request->get('nonparticipant');
+        $mode = $request->request->get('mode');
         $year = $request->request->get('year');
         $begin = new \DateTime($request->request->get('begin'));
         $end = new \DateTime($request->request->get('end'));
 
         $toDetailsBordereau = $doctrine->getManager()
             ->getRepository(DetailsBordereau::class)
-            ->getListBorderauxEntreDeuxDates($begin, $end) ;
+            ->getListBorderauxEntreDeuxDates($begin, $end, $year) ;
         foreach($toDetailsBordereau as $oDetailsBordereau)
         {
             $tiFamilyParticipant[] = $oDetailsBordereau->getFamily()->getId() ;
         }
-        /*
-        $toFamilyNotIn = $doctrine->getManager()
-            ->getRepository(Family::class)
-            ->getFamilyNotIn($tiFamilyParticipant) ;
-        foreach($toFamilyNotIn as $oFamilyNotIn)
-        {
-            echo '<pre>' ;
-            print_r($oFamilyNotIn->getId()) ;
-            echo '</pre>' ;
-        }
-        */
+        
         
 
         $oQuartierUser = $security->getUser()->retrieveUserPlatform()->getQuartier();
         if(!is_null($oQuartierUser)){
             $iIdQuartierUserConnected = $oQuartierUser->getId();
-            /*
-            $families = $doctrine->getManager()
-            ->getRepository(Family::class)
-            ->findBy(["Quartier" => $doctrine->getManager()->getRepository(Quartier::class)->find($iIdQuartierUserConnected)]);
-            */
+            
             $oQuartierWhere = $doctrine->getManager()->getRepository(Quartier::class)->find($iIdQuartierUserConnected) ;
             $families = $doctrine->getManager()
                 ->getRepository(Family::class)
-                ->getFamilyNotInWithQuartier($tiFamilyParticipant, $oQuartierWhere) ;
+                ->getFamilyNotInWithQuartier($tiFamilyParticipant, $oQuartierWhere, $nonparticipant) ;
         }else{
-            /*
+            
             $families = $doctrine->getManager()
                 ->getRepository(Family::class)
-                ->findAll();
-            */
-            $families = $doctrine->getManager()
-                ->getRepository(Family::class)
-                ->getFamilyNotIn($tiFamilyParticipant) ;
-        }
-        /*
-        foreach($families as $oFamilyNotIn)
-        {
-            echo '<pre>' ;
-            print_r($oFamilyNotIn->getId()) ;
-            echo '</pre>' ;
+                ->getFamilyNotIn($tiFamilyParticipant, $nonparticipant) ;
         }
         
-        echo '<hr/>' ;
-        //echo $QueryDetailBordereau . '<br/>';
-        echo '<pre>' ;
-        print_r($tiFamilyParticipant) ;
-        echo '</pre>' ;
-
-        echo $mode . ' => ' . $year  ;
-        print_r($begin) ;
-        echo '<br/>begin==' ;
-        print_r($end) ;
-        exit() ;
-        */
 
         $data = [];
+        
         if ($stateAuth['success']) {
+            //$data["years"] = array();
+            $toYears = array() ;
+            $detailsbordereau = $doctrine->getManager()->getRepository(DetailsBordereau::class)->findAllDistincts();
+            foreach ($detailsbordereau as $key => $value) {
+                $toYears[] = $value["yearHasina"];
+            }
             if(count($families)> 0){
+                foreach ($families as $family) {
+                    $apv = (!is_null($family->getApv())) ? $family->getApv()->getLibelle() : '';
+                    $date_in = (!is_null($family->getDateIn())) ? $family->getDateIn() : '';
+                    $address = (!is_null($family->getAddress())) ? $family->getAddress() : '';
+                    $telephone = (!is_null($family->getTelephone())) ? $family->getTelephone() : '';
+                    $profession = (!is_null($family->getProfession())) ? $family->getProfession() : '';
+                    $observation = (!is_null($family->getObservation())) ? $family->getObservation() : '';
+                    //$dateintimestamp = $date_in ;
+                    
+                    
+                    $data[] = [
+                        'id' => $family->getId(),
+                        'fullname' => $family->getFullname(),
+                        'quartier' => $family->getQuartier()->getNumero(),
+                        'apv' => $apv,
+                        'cardNumber' => $family->getCardNumber(),
+                        'date_in' => $date_in,
+                        'address' => $address,
+                        'telephone' => $telephone,
+                        'profession' => $profession,
+                        'observation' => $observation
+                    ];
+                }
+            }
+            
+            if ($mode == "export") {
+                
+                $data["title"]   = array() ;
+                $data["filters"] = array() ;
+                $data["exports"] = array() ;
+
+                $data["filters"][] = [
+                    'id' =>  '',
+                    'fullname' =>  'Année',
+                    'quartier' =>  'Date début',
+                    'apv' =>  'Date fin',
+                    'cardNumber' =>  '',
+                    'date_in' =>  '',
+                    'address' =>  '',
+                    'telephone' =>  '',
+                    'profession' =>  '',
+                    'observation' =>  '',
+                ] ;
+                $data["filters"][] = [
+                    'id' =>  '',
+                    'fullname' =>  ($year == '') ? 'Tous' : $year,
+                    'quartier' =>  $begin->format('d/m/Y'),
+                    'apv' =>  $end->format('d/m/Y'),
+                    'cardNumber' =>  '',
+                    'date_in' =>  '',
+                    'address' =>  '',
+                    'telephone' =>  '',
+                    'profession' =>  '',
+                    'observation' =>  '',
+                ] ;
+                $data["filters"][] = [
+                    'id' =>  '',
+                    'fullname' =>  '',
+                    'quartier' =>  '',
+                    'apv' =>  '',
+                    'cardNumber' =>  '',
+                    'date_in' =>  '',
+                    'address' =>  '',
+                    'telephone' =>  '',
+                    'profession' =>  '',
+                    'observation' =>  '',
+                ] ;
+                $data["filters"][] = [
+                    'id' =>  'ID',
+                    'fullname' =>  'Nom et Prénoms',
+                    'quartier' =>  'Quartier',
+                    'apv' =>  'APV',
+                    'cardNumber' =>  'Numéro Carte',
+                    'date_in' =>  'Date d\'entrée',
+                    'address' =>  'Adresse',
+                    'telephone' =>  'Tel',
+                    'profession' =>  'Profession',
+                    'observation' =>  'Observation',
+                ] ;
+
+                if(count($families)> 0){
+                    $iKey = 0 ;
                     foreach ($families as $family) {
                         $apv = (!is_null($family->getApv())) ? $family->getApv()->getLibelle() : '';
                         $date_in = (!is_null($family->getDateIn())) ? $family->getDateIn() : '';
@@ -305,21 +358,47 @@ class RapportController extends AbstractController
                         $telephone = (!is_null($family->getTelephone())) ? $family->getTelephone() : '';
                         $profession = (!is_null($family->getProfession())) ? $family->getProfession() : '';
                         $observation = (!is_null($family->getObservation())) ? $family->getObservation() : '';
-                        $data[] = [
+                        $data["exports"][$iKey] = [
                             'id' => $family->getId(),
                             'fullname' => $family->getFullname(),
                             'quartier' => $family->getQuartier()->getNumero(),
                             'apv' => $apv,
                             'cardNumber' => $family->getCardNumber(),
-                            'statut' => $family->isStatut(),
-                            'date_in' => $date_in,
+                            'date_in' => $date_in->format('d/m/Y'),
                             'address' => $address,
                             'telephone' => $telephone,
                             'profession' => $profession,
-                            'observation' => $observation,
+                            'observation' => $observation
                         ];
+                        $iKey ++ ;
                     }
                 }
+                $data["title"][] = [
+                    'id' =>  'LISTE DES FAMILLES ' . (($nonparticipant == 'vrai') ? 'NON' : '') .' PARTICIPANTS',
+                    'fullname' =>  '',
+                    'quartier' =>  '',
+                    'apv' =>  '',
+                    'cardNumber' =>  '',
+                    'date_in' =>  '',
+                    'address' =>  '',
+                    'telephone' =>  '',
+                    'profession' =>  '',
+                    'observation' =>  '',
+                ];
+                $data["title"][] = [
+                    'id' =>  '',
+                    'fullname' =>  '',
+                    'quartier' =>  '',
+                    'apv' =>  '',
+                    'cardNumber' =>  '',
+                    'date_in' =>  '',
+                    'address' =>  '',
+                    'telephone' =>  '',
+                    'profession' =>  '',
+                    'observation' =>  '',
+                ];
+            }
+
         }//end connected
 
         return $this->json($data);
@@ -327,5 +406,25 @@ class RapportController extends AbstractController
         
   
         
+    }
+    /**
+     * @Route("/rapport/listeanneebyuser", name="annee_by_user_index", methods={"POST"})
+     */
+    public function getlistanneebyuser(Request $request, ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
+    {
+
+        $data = [] ;
+        $data["years"] = array();
+
+        $oQuartierUser = $security->getUser()->retrieveUserPlatform()->getQuartier();
+        if(!is_null($oQuartierUser)){
+            $detailsbordereau = $doctrine->getManager()->getRepository(DetailsBordereau::class)->findDistinctsYearByQuartier($oQuartierUser);
+        }else{
+            $detailsbordereau = $doctrine->getManager()->getRepository(DetailsBordereau::class)->findAllDistincts();
+        }
+        foreach ($detailsbordereau as $key => $value) {
+            $data["years"][] = $value["yearHasina"];
+        }
+        return $this->json($data);
     }
 }

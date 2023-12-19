@@ -47,10 +47,11 @@ class FamilyRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-    public function getFamilyNotIn($_tiFamilyId)
+    public function getFamilyNotIn($_tiFamilyId, $_zNomParticipant)
     {
+        $zWhere = ($_zNomParticipant == "vrai") ?  'f.id NOT IN (:notfamily) AND f.statut = :etat' : 'f.id IN (:notfamily) AND f.statut = :etat' ;
         return $this->createQueryBuilder('f')
-            ->andWhere('f.id NOT IN (:notfamily) AND f.statut = :etat')
+            ->andWhere($zWhere)
             ->setParameter("notfamily", $_tiFamilyId)
             ->setParameter("etat", "1")
             ->getQuery()
@@ -58,10 +59,11 @@ class FamilyRepository extends ServiceEntityRepository
         ;
         
     }
-    public function getFamilyNotInWithQuartier($_tiFamilyId, $_oQuartier)
+    public function getFamilyNotInWithQuartier($_tiFamilyId, $_oQuartier, $_zNomParticipant)
     {
+        $zWhere = ($_zNomParticipant == "vrai") ? 'f.id NOT IN (:notfamily) AND f.statut = :etat AND f.Quartier = :QuartierSearch' : 'f.id IN (:notfamily) AND f.statut = :etat AND f.Quartier = :QuartierSearch' ;
         return $this->createQueryBuilder('f')
-            ->andWhere('f.id NOT IN (:notfamily) AND f.statut = :etat AND f.Quartier = :QuartierSearch')
+            ->andWhere($zWhere)
             ->setParameter("notfamily", $_tiFamilyId)
             ->setParameter("etat", "1")
             ->setParameter("QuartierSearch", $_oQuartier)

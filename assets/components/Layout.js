@@ -171,7 +171,7 @@ const Layout = ({children}) =>{
 										<i className="bi bi-receipt fs-5"></i>
 										<span>Rapport</span>
 									</Link>
-								</li> : menu
+								</li> : null
 							}
 							<li className="nav-item">
 								<Link

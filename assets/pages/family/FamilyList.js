@@ -452,7 +452,7 @@ function FamilyList() {
                                     </button>
             					</div>
                                 <div className="mb-1 mt-3 px-2 py-3">
-                                    <span className="btn-info">Nombre de familles actifs: {nombreActif}</span>
+                                    <span className="badge bg-primary">Nombre de familles actifs: {nombreActif}</span>
                                 </div>
                                 <div className="mb-1 mt-3 px-2 py-3">
                                         <div className="w-100 border border-radius-0 p-3">

@@ -131,7 +131,7 @@ function BordereauList() {
                                 to={`/bordereaux/show/${bordereau.id}`}>
                                 <i className="bi bi-eye-fill"></i>
                             </Link>
-                            {((bordereau.valid && mysession.access == "admin") || !bordereau.valid) &&
+                            {((bordereau.valid && mysession.user_authorisation.bordereaux.valid == 1) || !bordereau.valid) &&
                                 <>
                                     <Link
                                         className="btn btn-sm btn-outline-success mx-1"
@@ -143,7 +143,7 @@ function BordereauList() {
                                         className="btn btn-sm btn-outline-danger mx-1">
                                         <i className="bi bi-trash"></i>
                                     </button>
-                                    {(mysession.access == "admin" && !bordereau.valid) &&
+                                    {(mysession.user_authorisation.bordereaux.valid == 1 && !bordereau.valid) &&
                                         <button 
                                             onClick={()=>handleValidate(bordereau)}
                                             className="btn btn-sm btn-outline-primary mx-1">

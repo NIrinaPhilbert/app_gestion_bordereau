@@ -110,6 +110,8 @@ function FamilyEdit() {
             formData.append("dateOut", dateOut != null ? formatDate(dateOut) : null)
             formData.append("statut", statut)
             formData.append("address", address)
+            formData.append("telephone", telephone)
+            formData.append("profession", profession)
             formData.append("observation", observation)
             axios.post(`/api/family/edit/${id}`, formData)
                 .then(function (response) {
@@ -349,6 +351,28 @@ function FamilyEdit() {
                                                         placeholder="Adresse"></textarea>
                                                     <label htmlFor="address">Adresse</label>
                                                 </div>
+                                                <div className="form-floating mx-4 mb-3">
+                                            <input 
+                                                onChange={(event)=>{setTelephone(event.target.value)}}
+                                                value={telephone}
+                                                type="text"
+                                                className="form-control border border-outline-primary"
+                                                id="telephone"
+                                                name="telephone"
+                                                placeholder="Telephone"/>
+                                            <label htmlFor="telephone">Telephone</label>
+                                        </div>
+                                        <div className="form-floating mx-4 mb-3">
+                                            <input 
+                                                onChange={(event)=>{setProfession(event.target.value)}}
+                                                value={profession}
+                                                type="text"
+                                                className="form-control border border-outline-primary"
+                                                id="profession"
+                                                name="profession"
+                                                placeholder="Profession"/>
+                                            <label htmlFor="profession">Profession</label>
+                                        </div>
                                                 <div className="form-floating mx-4 mb-3">
                                                     <textarea 
                                                         value={observation}

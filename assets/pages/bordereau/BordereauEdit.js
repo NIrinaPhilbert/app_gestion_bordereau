@@ -788,7 +788,7 @@ function BordereauEdit() {
                                                                     ? <div className="w-100 mb-2">
                                                                         Adidy vita farany:
                                                                         Taona: {paramsResultsData.lastDetails.year}&nbsp;
-                                                                        => H: {paramsResultsData.lastDetails.hasina}&nbsp;
+                                                                        ={'>'} H: {paramsResultsData.lastDetails.hasina}&nbsp;
                                                                         | S: {paramsResultsData.lastDetails.seminera}&nbsp;
                                                                         | D: {paramsResultsData.lastDetails.diosezy}
                                                                         | Total: {paramsResultsData.lastDetails.total}

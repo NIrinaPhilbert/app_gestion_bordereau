@@ -433,6 +433,8 @@ class FamilyController extends AbstractController
                 if ($request->request->get('dateOut') != 'null') $family->setDateOut(new \DateTime($request->request->get('dateOut')));
                 $family->setStatut(($request->request->get('statut') == 0) ? true : false);
                 if ($request->request->get('observation') != '') $family->setObservation($request->request->get('observation'));
+                if ($request->request->get('telephone') != '') $family->setTelephone($request->request->get('telephone'));
+                if ($request->request->get('profession') != '') $family->setProfession($request->request->get('profession'));
                 $entityManager->persist($family);
                 $entityManager->flush();
 

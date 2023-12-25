@@ -94,6 +94,7 @@ function BordereauCreate() {
                         setIsGeneralError(false)
                         setMsgGeneral("")
                         setIsSaving(true)
+                        console.log('avant redirection id='+response.data.returnId)
                         navigate("/bordereaux/edit/"+response.data.returnId)
                     }
                 })

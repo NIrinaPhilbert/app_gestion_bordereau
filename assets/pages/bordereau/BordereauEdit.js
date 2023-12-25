@@ -249,7 +249,7 @@ function BordereauEdit() {
 
     const getFamiliesList = (familySelected = "", mode = null) => {
         var dataFamilies = []
-        axios.get('/api/family/list')
+        axios.get('/api/family/list/'+mode)
         .then(function (response) {
             var data = response.data
             if (data.length > 0) {

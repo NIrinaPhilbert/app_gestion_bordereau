@@ -55,6 +55,7 @@ function RapportListfamilleparticipant() {
     }
     const [searchData1, setSearchData1] = useState(initialSearch1)
     const [yearsData, setYearsData] = useState([])
+    const [nombreFamilleParticipant, setNombreFamilleParticipant] = useState(0)
     //=============================================//
 
     if (shouldRedirect) {
@@ -213,7 +214,9 @@ function RapportListfamilleparticipant() {
                 
                 
             } else {
+                var iNombreFamilleParticipant = 0 ;
                 response.data.map((family, key)=>{
+                    iNombreFamilleParticipant ++ ;
                     var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
                     /*family.statut = (
                         <span className={statutClass}>{familyStatus[family.statut ? 0 : 1]}</span>
@@ -235,6 +238,7 @@ function RapportListfamilleparticipant() {
                     )
                     return family
                 })
+                setNombreFamilleParticipant(iNombreFamilleParticipant)
                 setFamilyList(response.data)
                 setFamilyListSearch(response.data)
                 hideLoader()
@@ -471,6 +475,9 @@ function RapportListfamilleparticipant() {
             </div>
             <section className="section">
                 <div className="row">
+                    <div className="mb-1 mt-3 px-2 py-3">
+                        <span className="badge bg-primary">Nombre de familles participant: {nombreFamilleParticipant} </span>
+                    </div>
                     <div className="col-12 mb-2">
                         <h5>Zone de recherche</h5>
                     </div>

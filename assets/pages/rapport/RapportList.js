@@ -30,12 +30,28 @@ function RapportList() {
 		);
 	}
 
+    
     const initialSearch = {
         year: "",
         begin: new Date(),
         end: new Date()
     }
-    const [searchData, setSearchData] = useState(initialSearch)
+    //==set first day of current year in date debut==============//
+    let date = new Date() ;
+    const initialSearch1 = {
+        year: "",
+        begin: new Date(date.getFullYear(), 0, 1),
+        end: new Date()
+    }
+    const [searchData1, setSearchData1] = useState(initialSearch1)
+    const changeSearchData1 = (key, val) => {
+        var dataSearch1 = {...searchData1}
+        dataSearch1[key] = val
+        setSearchData1(dataSearch1)
+    }
+    console.log('searchdata1='+searchData1.begin)
+    //===========================================================//
+    const [searchData, setSearchData] = useState(initialSearch1)
     const [yearsData, setYearsData] = useState([])
 
 	const columns = [
@@ -97,6 +113,7 @@ function RapportList() {
         formData.append("end", formatDate(dataSearch.end))
         axios.post('/api/rapport/list', formData)
         .then(function (response) {
+            console.log(response.data)
 			setIsFetched(true)
             setYearsData(response.data.years)
 			response.data.rapports.map((rapport, key)=>{
@@ -300,8 +317,8 @@ function RapportList() {
                                                 <div className="form-floating form-floating-datepicker">
                                                     <DatePicker
                                                         className="form-control border border-outline-primary"
-                                                        selected={searchData.begin}
-                                                        onChange={(value)=>changeSearchData("begin", value)}
+                                                        selected={searchData1.begin}
+                                                        onChange={(value)=>changeSearchData1("begin", value)}
                                                         onFocus={e => { e.preventDefault(); focusDatepicker(e); }}
                                                         onBlur={e => { e.preventDefault(); blurDatepicker(e); }}
                                                         dateFormat="dd/MM/yyyy"

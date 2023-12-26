@@ -38,8 +38,19 @@ class RapportController extends AbstractController
                 $year = $request->request->get('year');
                 $begin = new \DateTime($request->request->get('begin'));
                 $end = new \DateTime($request->request->get('end'));
+                /*
+                print_r($begin) ;
+                print_r($end) ; 
+                echo $year . '<br/>' ;
+                */
                 $isYearEmpty = ($year == '');
-                $isAdmin = in_array('ROLE_ADMIN', $security->getUser()->getRoles());
+                //$isAdmin = in_array('ROLE_ADMIN', $security->getUser()->getRoles());
+                $isUserTousQuartier = false ;
+                if($security->getUser()->retrieveUserPlatform()->getQuartier() == null)
+                {
+                    $isUserTousQuartier = true ;    
+                }
+                
                 $quartiers = $doctrine->getManager()
                     ->getRepository(Quartier::class)
                     ->findAll();
@@ -63,27 +74,48 @@ class RapportController extends AbstractController
                         'value' => 0
                     ]
                 ];
-                $participants = $doctrine->getManager()->getRepository(DetailsBordereau::class)->findAll();
-                $totalGeneral['participants_number'] = count($participants);
+                //$participants = $doctrine->getManager()->getRepository(DetailsBordereau::class)->findAll();
+
+                $participantsDistincts = $doctrine->getManager()->getRepository(DetailsBordereau::class)->getListDistinctParticipantsEntreDeuxDates($begin, $end, $year) ;
+
+                $participants = $doctrine->getManager()->getRepository(DetailsBordereau::class)->getListParticipantsEntreDeuxDates($begin, $end, $year);
+                
+                $totalGeneral['participants_number'] = count($participantsDistincts);
+
+                //$totalGeneral['participants_number'] = count($participants);
+
                 $totalPercentGeneral = 0;
                 $totalHasinaGeneral = 0;
                 $totalSemineraGeneral = 0;
                 $totalDiosezyGeneral = 0;
-                foreach ($quartiers as $quartier) {
+                foreach ($quartiers as $quartier) {//debut boucle quartier
                     $totalParticipants = 0;
                     $totalFamilies = 0;
                     $totalPercent = 0;
                     $totalHasina = 0;
-                    if ($isAdmin || (!$isAdmin && $security->getUser()->retrieveUserPlatform()->getQuartier()->getId() == $quartier->getId())) {
+                    if ($isUserTousQuartier || (!$isUserTousQuartier && $security->getUser()->retrieveUserPlatform()->getQuartier()->getId() == $quartier->getId())) {
+                        
+                        foreach ($participantsDistincts as $key => $valueParticipantDistinct) {
+                            
+                                if ($valueParticipantDistinct->getFamily()->getApv()->getQuartier()->getId() == $quartier->getId())
+                                {
+                                    if ($isYearEmpty || (!$isYearEmpty && $valueParticipantDistinct->getTaonaHasina() == $year)) {
+                                        $totalParticipants++;
+                                        
+                                    }
+                                }
+                            
+                        }
                         foreach ($participants as $key => $value) {
                             $datyBordereau = $value->getBordereau()->getDaty();
                             if (
                                 $datyBordereau >= $begin && $datyBordereau <= $end
-                            ) {
+                            ) 
+                            {
                                 if ($value->getFamily()->getApv()->getQuartier()->getId() == $quartier->getId())
                                 {
                                     if ($isYearEmpty || (!$isYearEmpty && $value->getTaonaHasina() == $year)) {
-                                        $totalParticipants++;
+                                        //$totalParticipants++;
                                         $totalHasina += $value->getHasina();
                                         $totalHasinaGeneral += $value->getHasina();
                                         $totalSemineraGeneral += $value->getSeminera();
@@ -95,9 +127,9 @@ class RapportController extends AbstractController
                         $families = $doctrine->getManager()->getRepository(Family::class)->findBy(["statut" => true]);
                         $totalGeneral['families_number'] = count($families);
                         foreach ($families as $key => $value) {
-                            if (($value->getApv()->getQuartier()->getId() == $quartier->getId()) && ($isAdmin || (!$isAdmin && $security->getUser()->retrieveUserPlatform()->getQuartier()->getId() == $value->getApv()->getQuartier()->getId()))) $totalFamilies++;
+                            if (($value->getApv()->getQuartier()->getId() == $quartier->getId()) && ($isUserTousQuartier || (!$isUserTousQuartier && $security->getUser()->retrieveUserPlatform()->getQuartier()->getId() == $value->getApv()->getQuartier()->getId()))) $totalFamilies++;
                         }
-                        if (!$isAdmin && $security->getUser()->retrieveUserPlatform()->getQuartier()->getId() == $quartier->getId()) {
+                        if (!$isUserTousQuartier && $security->getUser()->retrieveUserPlatform()->getQuartier()->getId() == $quartier->getId()) {
                             $totalGeneral['participants_number'] = $totalParticipants;
                             $totalGeneral['families_number'] = $totalFamilies;
                         }
@@ -116,7 +148,7 @@ class RapportController extends AbstractController
                             'percent' => number_format($totalPercent, 2, '.', ' ')
                         ];
                     }
-                }
+                }//fin boucle quartier
                 $data["rapports"][] = [
                     'quartier' => '<b>Total général</b>',
                     'participants_number' => $totalGeneral['participants_number'],
@@ -240,7 +272,12 @@ class RapportController extends AbstractController
         {
             $tiFamilyParticipant[] = $oDetailsBordereau->getFamily()->getId() ;
         }
-        
+        $tiFamilyParticipant = array_unique($tiFamilyParticipant) ;
+        /*
+        echo '<pre>' ;
+        print_r(array_unique($tiFamilyParticipant)) ;
+        echo '</pre>' ;
+        */
         
 
         $oQuartierUser = $security->getUser()->retrieveUserPlatform()->getQuartier();

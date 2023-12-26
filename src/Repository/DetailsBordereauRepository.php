@@ -77,9 +77,10 @@ class DetailsBordereauRepository extends ServiceEntityRepository
     public function getListBorderauxEntreDeuxDates($_zDateDebut, $_zDateFin, $_zAnnee = "")
     {
         
-        $zWhere = ($_zAnnee == "") ? 'b.daty BETWEEN :start AND :end' : 'b.daty BETWEEN :start AND :end AND d.taonaHasina = :taona' ;
+        $zWhere = ($_zAnnee == "") ? 'b.daty BETWEEN :start AND :end AND b.valid = :validtruefalse AND f.statut = :etat' : 'b.daty BETWEEN :start AND :end AND d.taonaHasina = :taona AND b.valid = :validtruefalse AND f.statut = :etat' ;
         $oQueryListBorderauxEntreDeuxDates = $this->createQueryBuilder('d') ;
         $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.bordereau', 'b') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.family', 'f') ;
         $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->where($zWhere) ;
         $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('start', $_zDateDebut) ;
         $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('end', $_zDateFin) ;
@@ -87,11 +88,60 @@ class DetailsBordereauRepository extends ServiceEntityRepository
         {
             $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('taona', $_zAnnee) ;
         }
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('validtruefalse', true) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('etat', "1") ;
         $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getQuery() ;
         $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getResult() ;
 
         return $oQueryListBorderauxEntreDeuxDates;
     }
+    public function getListParticipantsEntreDeuxDates($_zDateDebut, $_zDateFin, $_zAnnee = "")
+    {
+        
+        $zWhere = ($_zAnnee == "") ? 'b.daty BETWEEN :start AND :end AND b.valid = :validtruefalse AND f.statut = :etat' : 'b.daty BETWEEN :start AND :end AND d.taonaHasina = :taona AND b.valid = :validtruefalse AND f.statut = :etat' ;
+        $oQueryListBorderauxEntreDeuxDates = $this->createQueryBuilder('d') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.bordereau', 'b') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.family', 'f') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->where($zWhere) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('start', $_zDateDebut) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('end', $_zDateFin) ;
+        if($_zAnnee != "")
+        {
+            $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('taona', $_zAnnee) ;
+        }
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('validtruefalse', true) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('etat', "1") ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getQuery() ;
+        //$oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->groupBy('d.family')->getQuery() ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getResult() ;
+
+        return $oQueryListBorderauxEntreDeuxDates;
+    }
+
+
+    public function getListDistinctParticipantsEntreDeuxDates($_zDateDebut, $_zDateFin, $_zAnnee = "")
+    {
+        
+        $zWhere = ($_zAnnee == "") ? 'b.daty BETWEEN :start AND :end AND b.valid = :validtruefalse AND f.statut = :etat' : 'b.daty BETWEEN :start AND :end AND d.taonaHasina = :taona AND b.valid = :validtruefalse AND f.statut = :etat' ;
+        $oQueryListBorderauxEntreDeuxDates = $this->createQueryBuilder('d') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.bordereau', 'b') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->join('d.family', 'f') ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->where($zWhere) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('start', $_zDateDebut) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('end', $_zDateFin) ;
+        if($_zAnnee != "")
+        {
+            $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('taona', $_zAnnee) ;
+        }
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('validtruefalse', true) ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->setParameter('etat', "1") ;
+        //$oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getQuery() ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->groupBy('d.family')->getQuery() ;
+        $oQueryListBorderauxEntreDeuxDates = $oQueryListBorderauxEntreDeuxDates->getResult() ;
+
+        return $oQueryListBorderauxEntreDeuxDates;
+    }
+
 
     // public function findParticipantsRapport($quartier)
     // {

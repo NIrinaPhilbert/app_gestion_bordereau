@@ -294,7 +294,7 @@ class FamilyController extends AbstractController
                     $data["dataFamily"] = [
                         "id" => $result[0]->getId(),
                         "fullname" => $result[0]->getFullname(),
-                        "apv" => $result[0]->getApv()->getId(),
+                        "apv" => $result[0]->getApv()->getLibelle(),
                         "cardNumber" => $result[0]->getCardNumber(),
                         "yearIn" => $result[0]->getDateIn()->format("Y"),
                         "address" => !is_null($result[0]->getAddress()) ? $result[0]->getAddress() : ''

@@ -31,6 +31,7 @@ function RapportListfamillenonparticipant() {
     const shouldRedirect = (localStorage.getItem('mysession') === null) ? true : false
     const [familyListSearch, setFamilyListSearch] = useState([])
     const [rapportListExport, setRapportListExport] = useState([])
+    const [nombreFamilleNonParticipant, setNombreFamilleNonParticipant] = useState(0)
     //=============================================//
     const initialSearch = {
         
@@ -188,7 +189,7 @@ function RapportListfamillenonparticipant() {
         	if (mode == "list") setIsFetched(false)
             showLoader()
         }
-        console.log(dataSearch1.begin)
+        console.log('affichage datasearch1login'+dataSearch1.begin)
         let formData = new FormData()
         formData.append("action", "search")
         formData.append("nonparticipant", "vrai")
@@ -213,7 +214,9 @@ function RapportListfamillenonparticipant() {
                 
                 
             } else {
+                var iNombreFamilleNonParticipant = 0 ;
                 response.data.map((family, key)=>{
+                    iNombreFamilleNonParticipant ++ ;
                     var statutClass = (family.statut) ? 'badge bg-primary' : 'badge bg-danger'
                     /*family.statut = (
                         <span className={statutClass}>{familyStatus[family.statut ? 0 : 1]}</span>
@@ -235,6 +238,7 @@ function RapportListfamillenonparticipant() {
                     )
                     return family
                 })
+                setNombreFamilleNonParticipant(iNombreFamilleNonParticipant) 
                 setFamilyList(response.data)
                 setFamilyListSearch(response.data)
                 hideLoader()
@@ -552,7 +556,9 @@ function RapportListfamillenonparticipant() {
                     <div className="col-12">
                         <div className="card mt-3">
                             <div className="card-body p-3">
-                            	
+                                <div className="mb-1 mt-3 px-2 py-3">
+                                    <span className="badge bg-primary">Nombre de familles non participant: {nombreFamilleNonParticipant} </span>
+                                </div>
                                 <div className="mb-1 mt-3 px-2 py-3">
                                         <div className="w-100 border border-radius-0 p-3">
                                             <div className="row">

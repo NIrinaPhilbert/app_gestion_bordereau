@@ -24,6 +24,8 @@ function FamilyEdit() {
     const [statut, setStatut] = useState([0])
     const [statutOptions, setStatutOptions] = useState([])
     const [observation, setObservation] = useState('')
+    const [telephone, setTelephone] = useState('')
+    const [profession, setProfession] = useState('')
     const [isSaving, setIsSaving] = useState(false)
     const [isGeneralError, setIsGeneralError] = useState(false)
     const [msgGeneral, setMsgGeneral] = useState('')
@@ -55,6 +57,8 @@ function FamilyEdit() {
             setStatut(family.statut)
             setAddress(family.address)
             setObservation(family.observation)
+            setTelephone(family.telephone)
+            setProfession(family.profession)
             if (family.apvOptions.length > 0) {
                 setIsGeneralError(false)
                 setMsgGeneral("")

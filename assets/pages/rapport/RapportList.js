@@ -100,7 +100,7 @@ function RapportList() {
     }
   
     const fetchRapportList = (isLoading = true, mode = "list") => {
-        let dataSearch = {...searchData}
+        let dataSearch = {...searchData1}
         if (isLoading) {
         	if (mode == "list") setIsFetched(false)
             showLoader()
@@ -178,7 +178,7 @@ function RapportList() {
     }
 
     const searchReset = () => {
-        setSearchData(initialSearch)
+        setSearchData1(initialSearch1)
         setAssist(generateRandom20DigitInteger())
     }
 
@@ -300,8 +300,8 @@ function RapportList() {
                                                     <select
                                                         className="form-select form-control border border-outline-primary"
                                                         id="searchYear"
-                                                        value={searchData.year}
-                                                        onChange={(e)=>changeSearchData("year", e.target.value)}
+                                                        value={searchData1.year}
+                                                        onChange={(e)=>changeSearchData1("year", e.target.value)}
                                                         aria-label="Sélection d'année">
                                                         <option value="">Tous</option>
                                                         {yearsData.map((year, keyear) => {
@@ -334,8 +334,8 @@ function RapportList() {
                                                 <div className="form-floating form-floating-datepicker">
                                                     <DatePicker
                                                         className="form-control border border-outline-primary"
-                                                        selected={searchData.end}
-                                                        onChange={(value)=>changeSearchData("end", value)}
+                                                        selected={searchData1.end}
+                                                        onChange={(value)=>changeSearchData1("end", value)}
                                                         onFocus={e => { e.preventDefault(); focusDatepicker(e); }}
                                                         onBlur={e => { e.preventDefault(); blurDatepicker(e); }}
                                                         dateFormat="dd/MM/yyyy"

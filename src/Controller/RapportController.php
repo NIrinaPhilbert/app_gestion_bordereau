@@ -36,6 +36,10 @@ class RapportController extends AbstractController
             if ($request->request->has('action') && $request->request->get('action') == 'search') {
                 $mode = $request->request->get('mode');
                 $year = $request->request->get('year');
+                /*
+                echo "date de début===> " . $request->request->get('begin') . "<br/>";
+                echo "date de fin===> " . $request->request->get('end') . "<br/>";
+                */
                 $begin = new \DateTime($request->request->get('begin'));
                 $end = new \DateTime($request->request->get('end'));
                 /*
@@ -75,7 +79,7 @@ class RapportController extends AbstractController
                     ]
                 ];
                 //$participants = $doctrine->getManager()->getRepository(DetailsBordereau::class)->findAll();
-
+                //echo "TEST DATY début: " . $begin->format('d/m/Y') . " => FIN " . $end->format('d/m/Y') ;
                 $participantsDistincts = $doctrine->getManager()->getRepository(DetailsBordereau::class)->getListDistinctParticipantsEntreDeuxDates($begin, $end, $year) ;
 
                 $participants = $doctrine->getManager()->getRepository(DetailsBordereau::class)->getListParticipantsEntreDeuxDates($begin, $end, $year);

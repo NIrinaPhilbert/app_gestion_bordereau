@@ -228,9 +228,9 @@ class ApvController extends AbstractController
     }
 
     /**
-     * @Route("/apv/apvOptions/{id_quartier}", name="apvOptions_index", methods={"GET"})
+     * @Route("/apv/apvOptions/{id_quartier}", name="apvOptions_index", methods={"POST"})
      */
-    public function apvOptions(int $id_quartier, ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
+    public function apvOptions(int $id_quartier, Request $request, ManagerRegistry $doctrine, Security $security, ParameterBagInterface $params): Response
     {
         $stateService = new StateService($security, $params);
         $stateAuth = $stateService->checkState();
@@ -246,7 +246,8 @@ class ApvController extends AbstractController
                 $apvsOptions[] = (object) [
                     'labelKey' => $apv->getId(),
                     'value' => $apv->getLibelle(),
-                    'isSelected' => ($keyAPV == 0) ? true : false
+                    //'isSelected' => ($keyAPV == 0) ? true : false
+                    'isSelected' => ($keyAPV == 0 && (!$request->request->has("apv") || is_null($request->request->get("apv")) || empty($request->request->get("apv")))) || (($request->request->has("apv") && !is_null($request->request->get("apv")) && !empty($request->request->get("apv"))) && $apv->getId() == $request->request->get("apv")) ? true : false
                 ];
             }
             

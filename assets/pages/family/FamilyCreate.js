@@ -80,6 +80,7 @@ function FamilyCreate() {
     }, [])*/
     //========================Get List Quartier=========================//
     useEffect(() => {
+        console.log("USE EFFECT")
         //setDocumentAccess([document_access_keys[0]])
         //setIsGeneralError(false)
         //setMsgGeneral("")
@@ -109,12 +110,13 @@ function FamilyCreate() {
     //========================End get List Quartier====================//
     //=======================Start change quartier=====================//
     const changeQuartier = (selectedOptions) => {
+        console.log("TEST CHANGE QUARTIER")
         let quartierSelected = selectedOptions.selectedKey
         setQuartier(quartierSelected)
         if (quartierSelected != '') {
             setIsSaving(true)
             showLoader()
-            axios.get(`/api/apv/apvOptions/${quartierSelected}`)
+            axios.post(`/api/apv/apvOptions/${quartierSelected}`)
             .then(function (response) {
                 setApvOptions(response.data)
                 setIsSaving(false)

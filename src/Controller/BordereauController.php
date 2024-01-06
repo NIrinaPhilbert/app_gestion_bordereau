@@ -54,6 +54,19 @@ class BordereauController extends AbstractController
                     $total = $detailsbordereau->getHasina() + $detailsbordereau->getSeminera() + $detailsbordereau->getDiosezy();
                     $totalTotal += $total;
                 }
+                $editdelete = 0 ;
+                if(!$bordereau->isValid())
+                {
+                    $editdelete = 1 ;
+                }
+                else
+                {
+                    if(in_array('ROLE_ADMIN', $security->getUser()->getRoles()))
+                    {
+                        $editdelete = 1 ;
+                    }
+                }
+
                 $data[] = [
                     'id' => $bordereau->getId(),
                     'number' => $bordereau->getNumber(),
@@ -63,6 +76,7 @@ class BordereauController extends AbstractController
                     'receiver' => $bordereau->isValid() ? $bordereau->getReceiver()->getFirstname().(!is_null($bordereau->getReceiver()->getLastname()) ? ' '.$bordereau->getReceiver()->getLastname() : '') : "",
                     'valid' => $bordereau->isValid(),
                     'statutText' => $tBordereauStatus[$statut],
+                    'editdelete' => $editdelete,
                     'total' => number_format($totalTotal, 0, '.', ' ')
                 ];
             }

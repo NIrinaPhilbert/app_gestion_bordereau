@@ -131,26 +131,30 @@ function BordereauList() {
                                 to={`/bordereaux/show/${bordereau.id}`}>
                                 <i className="bi bi-eye-fill"></i>
                             </Link>
-                            {((bordereau.valid && mysession.user_authorisation.bordereaux.valid == 1) || !bordereau.valid) &&
+                            {(bordereau.editdelete == 1) &&
                                 <>
-                                    <Link
-                                        className="btn btn-sm btn-outline-success mx-1"
-                                        to={`/bordereaux/edit/${bordereau.id}`}>
-                                        <i className="bi bi-pencil-square"></i>
-                                    </Link>
-                                    <button 
-                                        onClick={()=>handleDelete(bordereau.id)}
-                                        className="btn btn-sm btn-outline-danger mx-1">
-                                        <i className="bi bi-trash"></i>
-                                    </button>
-                                    {(mysession.user_authorisation.bordereaux.valid == 1 && !bordereau.valid) &&
+                                    {(mysession.user_authorisation.bordereaux.edit == 1) && 
+                                        <Link
+                                            className="btn btn-sm btn-outline-success mx-1"
+                                            to={`/bordereaux/edit/${bordereau.id}`}>
+                                            <i className="bi bi-pencil-square"></i>
+                                        </Link>
+                                    }
+                                    {(mysession.user_authorisation.bordereaux.delete == 1) && 
                                         <button 
-                                            onClick={()=>handleValidate(bordereau)}
-                                            className="btn btn-sm btn-outline-primary mx-1">
-                                            <i className="bi bi-check2-square"></i>
+                                            onClick={()=>handleDelete(bordereau.id)}
+                                            className="btn btn-sm btn-outline-danger mx-1">
+                                            <i className="bi bi-trash"></i>
                                         </button>
                                     }
                                 </>
+                            }
+                            {(mysession.user_authorisation.bordereaux.valid == 1 && !bordereau.valid) &&
+                                <button 
+                                    onClick={()=>handleValidate(bordereau)}
+                                    className="btn btn-sm btn-outline-primary mx-1">
+                                    <i className="bi bi-check2-square"></i>
+                                </button>
                             }
                         </>
                     )

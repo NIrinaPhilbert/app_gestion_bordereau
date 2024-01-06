@@ -34,6 +34,7 @@ function FamilyEdit() {
     console.log('ICI Family Edit')
 
     useEffect(() => {
+        console.log("USE EFFECT")
     	setIsGeneralError(false)
         setMsgGeneral("")
     	setIsSaving(true)
@@ -48,9 +49,11 @@ function FamilyEdit() {
             setQuartier(family.quartier)
             setQuartierOptions(family.quartierOptions)
             console.log(family.quartierOptions) ;
+            setApv(family.apv)
+            console.log("APV de la famille ==>" + family.apv) ;
             setApvOptions(family.apvOptions)
             console.log(family.apvOptions) ;
-            setApv(family.apv)
+            
             setCardNumber(family.cardNumber)
             setDateIn(new Date(family.dateIn))
             if (family.dateOut != null) setDateOut(new Date(family.dateOut))
@@ -158,13 +161,16 @@ function FamilyEdit() {
         }
     }
     const changeQuartier = (selectedOptions) => {
+        console.log("TEST CHANGE QUARTIER")
         let quartierSelected = selectedOptions.selectedKey
+        let formData = new FormData()
         //console.log(quartierSelected)
         setQuartier(quartierSelected)
         if (quartierSelected != '') {
+            formData.append("apv", apv)
             setIsSaving(true)
             showLoader()
-            axios.get(`/api/apv/apvOptions/${quartierSelected}`)
+            axios.post(`/api/apv/apvOptions/${quartierSelected}`, formData)
             
             .then(function (response) {
                 setApvOptions(response.data)

@@ -4466,8 +4466,8 @@ jspdf@^2.5.1:
     dompurify "^2.2.0"
     html2canvas "^1.0.0-rc.5"
 
-jszip@2.7.0:
-  version "2.7.0"
+jszip@2.4.0:
+  version "2.4.0"
   resolved "https://registry.yarnpkg.com/jszip/-/jszip-2.4.0.tgz#487a93b76c3bffa6cb085cd61eb934eabe2d294f"
   integrity sha512-m+yvNmYfRCaf1gr5YFT5e3fnSqLnE9McbNyRd0fNycsT0HltS19NKc18fh3Lvl/AIW/ovL6/MQ1JnfFg4G3o4A==
   dependencies:
